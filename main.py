@@ -5,6 +5,8 @@ import requests
 import pandas as pd
 import plotly.graph_objs as go
 import numpy as np
+from bokeh.plotting import figure
+
 
 # Api
 URL =  "https://speedskatingresults.com/api/json/skater_results.php"
@@ -32,21 +34,33 @@ dfCompetitions.drop(columns=['link'])
 dfCompetitions['time'] = dfCompetitions['time'].str.replace(',','.')
 dfCompetitions['time'] = pd.to_numeric(dfCompetitions['time'])
 
-# Calculations
-Total = dfCompetitions['time'].sum()
-Count = dfCompetitions['time'].count()
-Avg = (Total/Count) * 60
-Speed = Avg/Distance
-SpeedString = str("%.2f" % Speed)
-
-
 st.title("Gemiddelde snelheid")
 st.header("Info:") 
-st.write("SkaterID: " + str(SkaterID) + "   \nSeason: " + str(Season) + "\nGemiddelde snelheid: " + SpeedString)
+st.write("SkaterID: " + str(SkaterID) + "   \nSeason: " + str(Season))
 
+data = []
+dataSpeed = []
+dataIndex = []
 
-# print("Seizoen: " + str(Season))
-# print("Gemiddelde m/s: " + SpeedString)
+for index, row in dfCompetitions.iterrows():
+    strindex = str(index + 1)
 
+    time = dfCompetitions['time'].iloc[index]
+    speedEach = Distance / time
+    dataSpeed.append(speedEach)
+    dataIndex.append(index)
+    data.append([strindex, speedEach])
+    
+cols = ['id', 'speed']
 
+dfSpeed = pd.DataFrame(data, columns=cols)
 
+fig = figure(
+    title = 'Speed of ' +str(Distance) + "m",
+    x_axis_label='Amount of runs',
+    y_axis_label='Speed in km/h'
+)
+
+fig.line(dfSpeed['id'], dfSpeed['speed'], legend='Speed', line_width=2)
+
+st.bokeh_chart(fig, use_container_width=True)
