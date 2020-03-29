@@ -9,37 +9,37 @@ from pandas.io.json import json_normalize
 import time as timee
 import datetime, calendar
 
-SkaterID = 831
-Season = 2016
-
+# Schaatsers data naar pandas dataframe
 skatersid = [831, 31536, 687, 5487, 5796, 6588]
 skatersfullname = ['Sven Kramer', 'Jutta Leerdam', 'Ireen Wüst', 'Kjeld Nuis', 'Lotte van Beek', 'Kai Verbij']
-
 dfSchaatsers = pd.DataFrame(list(zip(skatersid, skatersfullname)),columns=['Skater_id', 'Skater_fullname'])
 
+# Progress bar, status text, checking distance
 progress = 0
 progress_bar = st.sidebar.progress(progress)
 status_text = st.sidebar.empty()
 checkingDistance = st.sidebar.empty()
 
+# Set pagina title
 st.title("Snelheid van een seizoen")
 
+# User input naam en seizoen
 Skatername = st.sidebar.selectbox("Schaatser", dfSchaatsers['Skater_fullname'].tolist())
-
 Season = st.sidebar.slider("Seizoen", 2007,2020)
 
+# Checkt of er knop wordt ingedrukt
 if st.sidebar.button("Laat grafiek zien"):
+    # Schaatser naam naar id
     idschaatser = dfSchaatsers.loc[dfSchaatsers['Skater_fullname'] == Skatername]
-
     idschaatser = idschaatser.reset_index(drop=True)
-
     idschaatser = idschaatser.loc[0].at['Skater_id']
-
     SkaterID = idschaatser
 
+    # Info
     st.header("Info:") 
     st.info("Schaatser: " + str(Skatername) + "   \nSkaterID: " + str(SkaterID) + "   \nSeizoen: " + str(Season))
 
+    # Ipv aantal runs datum maar dit werkt nog niet
     # def add_months(sourcedate,months):
     #     month = sourcedate.month - 1 + months
     #     year = sourcedate.year + month / 12
@@ -50,8 +50,10 @@ if st.sidebar.button("Laat grafiek zien"):
     # Api
     URL =  "https://speedskatingresults.com/api/json/skater_results.php"
 
+    # list die gevuld gaat worden met distances waarbij geen data is
     emptydistances = []
 
+    # list van alle distances
     distances = [100,
         200,
         300,
@@ -64,14 +66,13 @@ if st.sidebar.button("Laat grafiek zien"):
         5000,
         10000]
 
-
+    # For loop zodat elke distance gecheckt wordt
     for distance in distances:
         Distance = distance
 
+        # Api resultaat ophalen
         Parameters = {'skater':SkaterID, 'distance':Distance, 'season': Season} 
-
         r = requests.get(url = URL, params = Parameters) 
-
         data = r.json() 
 
         # Json to dataframe
@@ -80,8 +81,8 @@ if st.sidebar.button("Laat grafiek zien"):
         # Json column to new dataframe
         dfCompetitions = pd.io.json.json_normalize(df.results[0])
 
-        # Check is dataframe is empty
-        # Else don't plot
+        # Check of dataframe is leeg
+        # Else niet plotten
         if not dfCompetitions.empty and not len(dfCompetitions.index) == 1: 
             dfCompetitions.drop(columns=['link'])
             
@@ -95,27 +96,31 @@ if st.sidebar.button("Laat grafiek zien"):
             # to numeric
             dfCompetitions['time'] = pd.to_numeric(dfCompetitions['time'])
 
-        # Create empty list
+            # Create empty list om een nieuwe dataframe te maken
             data = []
 
-        # Calc speed and set in list
+            # Calc speed and set in list
             for index, row in dfCompetitions.iterrows():
                 strindex = str(index + 1)
 
+                # Tijd variable uit de kollom halen
                 time = dfCompetitions['time'].iloc[index]
+
+                # Datum
                 # date = dfCompetitions['date'].iloc[index]
                 # date = add_months(datetime.datetime(*[int(item) for item in date.split('-')]), 1).strftime("%Y-%m-%d")
 
-
-
+                # Snelheid variable berekenen naar km/h
                 speedEach = (Distance / time) * 3.6
+
+                # Data list met gegevens geven
                 data.append([strindex, speedEach])
                 
-        # Set list to dataframe
+            # Set list to dataframe
             cols = ['id', 'speed']
             dfSpeed = pd.DataFrame(data, columns=cols)
 
-        # Set figure
+            # Set figure en plot het
             fig = figure(
                 title = 'Snelheid van ' +str(Distance) + "m",
                 x_axis_label='Aantal runs',
@@ -124,17 +129,21 @@ if st.sidebar.button("Laat grafiek zien"):
             fig.plot_height =  400
             fig.line(dfSpeed['id'], dfSpeed['speed'], legend='Snelheid', line_width=2)
 
-        # Set sort chart
+            # Set sort chart
             st.bokeh_chart(fig, use_container_width=True)
 
         else:
+            # Vul emptydistances list met de empty distance
             emptydistances.append(distance)
-           
+
+            #Print Distance in console    
             print("Distance: " + str(Distance) + " is empty.")
 
+            # Als emptydistances alle distances bevat geef melding
             if emptydistances == distances:
                 st.error("GEEN DATA     \n Voeg data toe aan speedskatingresults.com om hier een grafiek te plotten")
         
+        # Set progressbar  
         if progress == 90:
             progress = 100
         else:
@@ -142,7 +151,7 @@ if st.sidebar.button("Laat grafiek zien"):
         progress_bar.progress(progress)
         status_text.text("%i%% Compleet" % progress)
 
-
+        # Set checking distance
         if distance == 10000:
             checkingDistance.text("Alle afstanden gecheckt")
         else: 
