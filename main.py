@@ -69,6 +69,9 @@ if st.sidebar.button("Laat grafiek zien"):
     # For loop zodat elke distance gecheckt wordt
     for distance in distances:
         Distance = distance
+        
+        # Set checking distance
+        checkingDistance.text("Checking Afstand: %im " % distance)
 
         # Api resultaat ophalen
         Parameters = {'skater':SkaterID, 'distance':Distance, 'season': Season} 
@@ -154,7 +157,5 @@ if st.sidebar.button("Laat grafiek zien"):
         # Set checking distance
         if distance == 10000:
             checkingDistance.text("Alle afstanden gecheckt")
-        else: 
-            checkingDistance.text("Checking Afstand: %im " % distance)
 
 
