@@ -10,9 +10,36 @@ import time as timee
 import datetime, calendar
 
 # Schaatsers data naar pandas dataframe
-skatersid = [831, 31536, 687, 5487, 5796, 6588]
-skatersfullname = ['Sven Kramer', 'Jutta Leerdam', 'Ireen Wüst', 'Kjeld Nuis', 'Lotte van Beek', 'Kai Verbij']
-dfSchaatsers = pd.DataFrame(list(zip(skatersid, skatersfullname)),columns=['Skater_id', 'Skater_fullname'])
+# skatersid = [831, 31536, 687, 5487, 5796, 6588]
+# skatersfullname = ['Sven Kramer', 'Jutta Leerdam', 'Ireen Wüst', 'Kjeld Nuis', 'Lotte van Beek', 'Kai Verbij']
+# dfSchaatsers = pd.DataFrame(list(zip(skatersid, skatersfullname)),columns=['Skater_id', 'Skater_fullname'])
+
+
+SkaterLookupURL = "https://speedskatingresults.com/api/json/skater_lookup.php"
+
+def getSkaters(familyname):
+    parameters = {'familyname':familyname} 
+    r = requests.get(url = SkaterLookupURL, params = parameters) 
+    data = r.json() 
+    results = json_normalize(data)
+    resultsNormalized = pd.io.json.json_normalize(results.skaters[0])
+
+    skatersList = resultsNormalized['givenname']+ ' ' +  resultsNormalized['familyname'] + ' (' +  resultsNormalized['country'] + ')'
+    skatersListID = resultsNormalized['id']
+
+    return skatersList
+
+def findSkaterID(familyname, givenname, country):
+    parameters = {'familyname':familyname,'givenname': givenname ,'country':country} 
+
+    r = requests.get(url = SkaterLookupURL, params = parameters) 
+    data = r.json() 
+    results = json_normalize(data)
+    resultsNormalized = pd.io.json.json_normalize(results.skaters[0])
+    
+    skaterID = resultsNormalized['id'][0]
+    return skaterID
+
 
 # Progress bar, status text, checking distance
 progress = 0
@@ -24,20 +51,30 @@ checkingDistance = st.sidebar.empty()
 st.title("Snelheid van een seizoen")
 
 # User input naam en seizoen
-Skatername = st.sidebar.selectbox("Schaatser", dfSchaatsers['Skater_fullname'].tolist())
+familyname = st.sidebar.text_input('Zoeken op achternaam')
+schaatser = st.sidebar.selectbox('Schaatster',getSkaters(familyname))
+
+firstname = schaatser.split()[0]
+lastname = schaatser.split()[1]
+country = schaatser.split()[2].strip('()')
+
+SkaterID =findSkaterID(lastname, firstname, country) #72938
+
+
+# Skatername = st.sidebar.selectbox("Schaatser", dfSchaatsers['Skater_fullname'].tolist())
 Season = st.sidebar.slider("Seizoen", 2007,2020)
 
 # Checkt of er knop wordt ingedrukt
 # if st.sidebar.button("Laat grafiek zien"):
 # Schaatser naam naar id
-idschaatser = dfSchaatsers.loc[dfSchaatsers['Skater_fullname'] == Skatername]
-idschaatser = idschaatser.reset_index(drop=True)
-idschaatser = idschaatser.loc[0].at['Skater_id']
-SkaterID = idschaatser
+# idschaatser = dfSchaatsers.loc[dfSchaatsers['Skater_fullname'] == Skatername]
+# idschaatser = idschaatser.reset_index(drop=True)
+# idschaatser = idschaatser.loc[0].at['Skater_id']
+# SkaterID = idschaatser
 
 # Info
 st.header("Info:") 
-st.info("Schaatser: " + str(Skatername) + "   \nSkaterID: " + str(SkaterID) + "   \nSeizoen: " + str(Season))
+st.info("Schaatser: " + str(schaatser) + "   \nSkaterID: " + str(SkaterID) + "   \nSeizoen: " + str(Season))
 
 # Ipv aantal runs datum maar dit werkt nog niet
 # def add_months(sourcedate,months):
@@ -144,7 +181,7 @@ for distance in distances:
 
         # Als emptydistances alle distances bevat geef melding
         if emptydistances == distances:
-            st.error("GEEN DATA     \n Voeg data toe aan speedskatingresults.com om hier een grafiek te plotten")
+            st.error("GEEN DATA     \n Voeg data toe voor "+ str(schaatser) +" op speedskatingresults.com om hier een grafiek te plotten")
     
     # Set progressbar  
     if progress == 90:
@@ -157,5 +194,3 @@ for distance in distances:
     # Set checking distance
     if distance == 10000:
         checkingDistance.text("Alle afstanden gecheckt")
-
-
