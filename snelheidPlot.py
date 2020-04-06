@@ -1,15 +1,4 @@
 
-# # Imports
-# import streamlit as st
-# import requests
-# import pandas as pd
-# import numpy as np
-# from bokeh.plotting import figure
-# from pandas.io.json import json_normalize
-# import time as timee
-# import datetime
-# import calendar
-
 def runPlot():
     # Imports
     import streamlit as st
@@ -177,6 +166,9 @@ def runPlot():
             cols = ['id', 'speed']
             dfSpeed = pd.DataFrame(data, columns=cols)
 
+            avgSpeed = dfSpeed['speed'].mean()
+            avgSpeed = "{:.2f}".format(avgSpeed)
+
             # Set figure en plot het
             fig = figure(
                 title='Snelheid van ' + str(Distance) + "m",
@@ -189,6 +181,13 @@ def runPlot():
 
             # Set sort chart
             st.bokeh_chart(fig, use_container_width=True)
+
+            # Print gemiddelde snelheid
+            st.subheader("Gemiddelde snelheid is " + str(avgSpeed))
+
+            slashes = '-' * 30
+            st.write(slashes)
+
 
         else:
             # Vul emptydistances list met de empty distance
