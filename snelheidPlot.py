@@ -11,83 +11,59 @@ def runPlot():
     import datetime
     import calendar
     import snelheidPlot
-
+    
+    # Progress bar, status text, checking distance
     progress = 0
     progress_bar = st.sidebar.progress(progress)
     status_text = st.sidebar.empty()
     checkingDistance = st.sidebar.empty()
 
+    # Zet skaterlookup url
     SkaterLookupURL = "https://speedskatingresults.com/api/json/skater_lookup.php"
 
-
-    def getSkaters(familyname):
-        parameters = {'familyname': familyname}
-        r = requests.get(url=SkaterLookupURL, params=parameters)
-        data = r.json()
+    # Functie die skater ophaald voor de dropdown
+    def getSkaters(givenname,familyname):
+        parameters = {'givenname':givenname,'familyname':familyname} 
+        r = requests.get(url = SkaterLookupURL, params = parameters) 
+        data = r.json() 
         results = json_normalize(data)
         resultsNormalized = pd.io.json.json_normalize(results.skaters[0])
 
-        skatersList = resultsNormalized['givenname'] + ' ' + \
-            resultsNormalized['familyname'] + \
-            ' (' + resultsNormalized['country'] + ')'
-        skatersListID = resultsNormalized['id']
+        return resultsNormalized
 
-        return skatersList
+    # Functie die skaterID vindt
+    def findSkaterID(chosenSkater, skatersFormatted,skaterListID):
+        search = skatersFormatted.str.find(chosenSkater)
+        listIndex = np.where(search == 0)
+        skaterID = skaterListID[listIndex[0]]
 
-    def findSkaterID(familyname, givenname, country):
-        parameters = {'familyname': familyname,
-                    'givenname': givenname, 'country': country}
-        
-        r = requests.get(url=SkaterLookupURL, params=parameters)
-        data = r.json()
-        results = json_normalize(data)
-        resultsNormalized = pd.io.json.json_normalize(results.skaters[0])
-        skaterID = resultsNormalized['id'][0]
-        return skaterID
+        return int(skaterID)
 
+    # Zijmenu: Achternaam zoeken
+    st.sidebar.header("Zoeken:") 
+    givenname = st.sidebar.text_input('Voornaam')
+    familyname = st.sidebar.text_input('Achternaam')
 
-    # Progress bar, status text, checking distance
-    # progress = 0
-    # progress_bar = st.sidebar.progress(progress)
-    # status_text = st.sidebar.empty()
-    # checkingDistance = st.sidebar.empty()
+    #Schaatsers ophalen
+    skatersList = getSkaters(givenname,familyname)
+    skatersFormatted = skatersList['givenname']+ ' ' +  skatersList['familyname'] + ' (' +  skatersList['country'] + ')'
+    skaterListID = skatersList['id']
 
-    # User input naam en seizoen
-    familyname = st.sidebar.text_input('Zoeken op achternaam')
-    schaatser = st.sidebar.selectbox('Schaatster', getSkaters(familyname))
+    #Zijmenu: Dropdown met schaatsers
+    chosenSkater = st.sidebar.selectbox('Schaatster',skatersFormatted)
 
-    firstname = schaatser.split()[0]
-    lastname = schaatser.split()[1]
-    country = schaatser.split()[2].strip('()')
+    #Skater ID ophalen
+    SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
 
-    SkaterID = findSkaterID(lastname, firstname, country)  # 72938
-
-
-    # Skatername = st.sidebar.selectbox("Schaatser", dfSchaatsers['Skater_fullname'].tolist())
+    # Season filter
     Season = st.sidebar.slider("Seizoen", 2007, 2020)
-
-    # Checkt of er knop wordt ingedrukt
-    # if st.sidebar.button("Laat grafiek zien"):
-    # Schaatser naam naar id
-    # idschaatser = dfSchaatsers.loc[dfSchaatsers['Skater_fullname'] == Skatername]
-    # idschaatser = idschaatser.reset_index(drop=True)
-    # idschaatser = idschaatser.loc[0].at['Skater_id']
-    # SkaterID = idschaatser
 
     # Info
     st.header("Info:")
-    st.info("Schaatser: " + str(schaatser) + "   \nSkaterID: " +
+    st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " +
             str(SkaterID) + "   \nSeizoen: " + str(Season))
 
-    # Ipv aantal runs datum maar dit werkt nog niet
-    # def add_months(sourcedate,months):
-    #     month = sourcedate.month - 1 + months
-    #     year = sourcedate.year + month / 12
-    #     month = month % 12 + 1
-    #     day = min(sourcedate.day,calendar.monthrange(year,month)[1])
-    #     return datetime.date(year,month,day)
-
-    # Api
+    # URL
     URL = "https://speedskatingresults.com/api/json/skater_results.php"
 
     # list die gevuld gaat worden met distances waarbij geen data is
@@ -139,22 +115,18 @@ def runPlot():
                 else:
                     dfCompetitions['time'].iloc[index] = dfCompetitions['time'].iloc[index].replace(
                         ',', '.')
-            # to numeric
+            # Convert naar int
             dfCompetitions['time'] = pd.to_numeric(dfCompetitions['time'])
 
-            # Create empty list om een nieuwe dataframe te maken
+            # Nieuwe empty list om een nieuwe dataframe te maken
             data = []
 
-            # Calc speed and set in list
+            # Bereken snelheid en zet in list
             for index, row in dfCompetitions.iterrows():
                 strindex = str(index + 1)
 
                 # Tijd variable uit de kollom halen
                 time = dfCompetitions['time'].iloc[index]
-
-                # Datum
-                # date = dfCompetitions['date'].iloc[index]
-                # date = add_months(datetime.datetime(*[int(item) for item in date.split('-')]), 1).strftime("%Y-%m-%d")
 
                 # Snelheid variable berekenen naar km/h
                 speedEach = (Distance / time) * 3.6
@@ -166,25 +138,35 @@ def runPlot():
             cols = ['id', 'speed']
             dfSpeed = pd.DataFrame(data, columns=cols)
 
+            # Bereken gemiddelde snelheid van een afstand
             avgSpeed = dfSpeed['speed'].mean()
             avgSpeed = "{:.2f}".format(avgSpeed)
 
-            # Set figure en plot het
+            TOOLTIPS = [
+                ("Snelheid:", "$y"),
+            ]
+
+            # Configureer figure en plot het
             fig = figure(
+                plot_height=400,
                 title='Snelheid van ' + str(Distance) + "m",
                 x_axis_label='Aantal runs',
-                y_axis_label='Snelheid in km/h'
+                y_axis_label='Snelheid in km/h',
+                tools="pan, wheel_zoom, reset, save, hover", 
+                active_drag="pan",
+                tooltips = TOOLTIPS
             )
-            fig.plot_height = 400
+            # fig.plot_height = 400
             fig.line(dfSpeed['id'], dfSpeed['speed'],
                     legend='Snelheid', line_width=2)
 
-            # Set sort chart
+            # Set sort chart (bokeh_chart)
             st.bokeh_chart(fig, use_container_width=True)
 
             # Print gemiddelde snelheid
-            st.subheader("Gemiddelde snelheid is " + str(avgSpeed))
+            st.subheader("Gemiddelde snelheid is " + str(avgSpeed) + " km/h")
 
+            # Print lange doorgetrokken lijn om afstanden makkelijker te zien splitsen
             slashes = '-' * 30
             st.write(slashes)
 
@@ -193,12 +175,9 @@ def runPlot():
             # Vul emptydistances list met de empty distance
             emptydistances.append(distance)
 
-            # Print Distance in console
-            print("Distance: " + str(Distance) + " is empty.")
-
             # Als emptydistances alle distances bevat geef melding
             if emptydistances == distances:
-                st.error("GEEN DATA     \n Voeg data toe voor " + str(schaatser) +
+                st.error("GEEN DATA     \n Voeg data toe voor " + str(chosenSkater) +
                         " op speedskatingresults.com om hier een grafiek te plotten")
 
         # Set progressbar
@@ -211,4 +190,4 @@ def runPlot():
 
         # Set checking distance
         if distance == 10000:
-            checkingDistance.text("Alle afstanden gecheckt")
+            checkingDistance.empty()
