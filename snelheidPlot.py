@@ -11,7 +11,7 @@ def runPlot():
     import datetime
     import calendar
     import snelheidPlot
-    
+
     # Progress bar, status text, checking distance
     progress = 0
     progress_bar = st.sidebar.progress(progress)
@@ -45,52 +45,55 @@ def runPlot():
     familyname = st.sidebar.text_input('Achternaam')
 
     #Schaatsers ophalen
-    skatersList = getSkaters(givenname,familyname)
-    skatersFormatted = skatersList['givenname']+ ' ' +  skatersList['familyname'] + ' (' +  skatersList['country'] + ')'
-    skaterListID = skatersList['id']
+    try: 
+        skatersList = getSkaters(givenname,familyname)
+        skatersFormatted = skatersList['givenname']+ ' ' +  skatersList['familyname'] + ' (' +  skatersList['country'] + ')'
+        skaterListID = skatersList['id']
+    except:
+        st.error("---GEEN SCHAATSER MET DEZE NAAM GEVONDEN---")
 
+    
     #Zijmenu: Dropdown met schaatsers
     chosenSkater = st.sidebar.selectbox('Schaatster',skatersFormatted)
 
     #Skater ID ophalen
     SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
 
-    # Season filter
-    Season = st.sidebar.slider("Seizoen", 2007, 2020)
-
-    # Info
-    st.header("Info:")
-    st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " +
-            str(SkaterID) + "   \nSeizoen: " + str(Season))
-
     # URL
     URL = "https://speedskatingresults.com/api/json/skater_results.php"
-
+    
+    
     # list die gevuld gaat worden met distances waarbij geen data is
     emptydistances = []
 
     # list van alle distances
     distances = [100,
-                200,
-                300,
-                400,
-                500,
-                700,
-                1000,
-                1500,
-                3000,
-                5000,
-                10000]
+        200,
+        300,
+        400,
+        500,
+        700,
+        1000,
+        1500,
+        3000,
+        5000,
+        10000]
+    
+   
 
+    # Info
+    st.header("Info:")
+    st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
+    
     # For loop zodat elke distance gecheckt wordt
     for distance in distances:
         Distance = distance
-
+             
         # Set checking distance
         checkingDistance.text("Checking Afstand: %im " % distance)
 
         # Api resultaat ophalen
-        Parameters = {'skater': SkaterID, 'distance': Distance, 'season': Season}
+        Parameters = {'skater': SkaterID, 'distance': Distance}
         r = requests.get(url=URL, params=Parameters)
         data = r.json()
 
@@ -120,10 +123,14 @@ def runPlot():
 
             # Nieuwe empty list om een nieuwe dataframe te maken
             data = []
+            
+            dfCompetitions['date'] = pd.to_datetime(dfCompetitions['date'])
 
             # Bereken snelheid en zet in list
             for index, row in dfCompetitions.iterrows():
                 strindex = str(index + 1)
+
+                date = dfCompetitions['date'].iloc[index]
 
                 # Tijd variable uit de kollom halen
                 time = dfCompetitions['time'].iloc[index]
@@ -132,15 +139,19 @@ def runPlot():
                 speedEach = (Distance / time) * 3.6
 
                 # Data list met gegevens geven
-                data.append([strindex, speedEach])
+                data.append([strindex, date, speedEach])
 
             # Set list to dataframe
-            cols = ['id', 'speed']
+            cols = ['id', 'date', 'speed']
             dfSpeed = pd.DataFrame(data, columns=cols)
+            dfSpeed = dfSpeed.sort_values(by='date')
 
             # Bereken gemiddelde snelheid van een afstand
             avgSpeed = dfSpeed['speed'].mean()
             avgSpeed = "{:.2f}".format(avgSpeed)
+
+            dates = dfSpeed['date'].values.tolist()
+            speed = dfSpeed['speed'].values.tolist()
 
             TOOLTIPS = [
                 ("Snelheid:", "$y"),
@@ -150,14 +161,16 @@ def runPlot():
             fig = figure(
                 plot_height=400,
                 title='Snelheid van ' + str(Distance) + "m",
-                x_axis_label='Aantal runs',
+                x_axis_label='Datum',
                 y_axis_label='Snelheid in km/h',
                 tools="pan, wheel_zoom, reset, save, hover", 
                 active_drag="pan",
-                tooltips = TOOLTIPS
+                tooltips = TOOLTIPS,
+                x_axis_type='datetime',
             )
+            
             # fig.plot_height = 400
-            fig.line(dfSpeed['id'], dfSpeed['speed'],
+            fig.line(dfSpeed['date'], dfSpeed['speed'],
                     legend='Snelheid', line_width=2)
 
             # Set sort chart (bokeh_chart)
