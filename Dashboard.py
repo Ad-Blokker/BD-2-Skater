@@ -35,21 +35,21 @@ image = Image.open('logo.png')
 st.sidebar.image(image, width= 250,)
 
 # Dropdown met de keuze qua plots
-plots = ['___', 'Snelheid van een seizoen', 'Persoonlijke Records','Locatie plot', 'Dataframe']
+plots = [' ', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Alle Data']
 plotTab = st.sidebar.selectbox('Selecteer een Plot', plots)
 
 # If en elif's die scripts oproepen om de plots te maken
-if plotTab == '___': #default
+if plotTab == ' ': #default
     st.title("Dashboard")
     st.header("Team Skating")
-elif plotTab == 'Snelheid van een seizoen': #snelheidPlot
-    st.title("Snelheid van een seizoen")
+elif plotTab == 'Gemiddelde snelheid': #snelheidPlot
+    st.title("Gemiddelde snelheid van alle seizoenen")
     snelheidPlot.runPlot()
 elif plotTab == 'Persoonlijke Records': #personal_records
     personal_records.runPlot()
 elif plotTab == 'Locatie plot': #plotslocatie
     plotslocatie.runPlot()
-elif plotTab == 'Dataframe': #dataframePlot
+elif plotTab == 'Alle Data': #dataframePlot
     dataframePlot.runPlot()
 else: #Foutmelding
     st.error("Geen keuze gemaakt in het menu")
