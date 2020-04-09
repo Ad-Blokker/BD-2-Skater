@@ -1,10 +1,42 @@
 # Imports
 import streamlit as st
 import snelheidPlot
+import dataframePlot
 import personal_records
+import plotslocatie
+from PIL import Image
+
+html = """
+<style>
+.sidebar .sidebar-content {
+  background-color: #F39D12;
+  background-image: none;
+  color: white;
+}
+
+.image-container img{
+    margin-top: -35px
+}
+
+.stTextInput label{
+    color:white;
+}
+.stSelectbox label{
+    color:white;
+}
+
+
+</style>
+"""
+
+st.markdown(html, unsafe_allow_html=True)
+
+image = Image.open('logo.png')
+st.sidebar.image(image, width= 250,)
 
 # Dropdown met de keuze qua plots
-plotTab = st.sidebar.selectbox('Selecteer een Plot', ['___', 'Snelheid van een seizoen', 'Persoonlijke Records'])
+plots = ['___', 'Snelheid van een seizoen', 'Persoonlijke Records','Locatie plot', 'Dataframe']
+plotTab = st.sidebar.selectbox('Selecteer een Plot', plots)
 
 # If en elif's die scripts oproepen om de plots te maken
 if plotTab == '___': #default
@@ -15,5 +47,9 @@ elif plotTab == 'Snelheid van een seizoen': #snelheidPlot
     snelheidPlot.runPlot()
 elif plotTab == 'Persoonlijke Records': #personal_records
     personal_records.runPlot()
+elif plotTab == 'Locatie plot': #plotslocatie
+    plotslocatie.runPlot()
+elif plotTab == 'Dataframe': #dataframePlot
+    dataframePlot.runPlot()
 else: #Foutmelding
     st.error("Geen keuze gemaakt in het menu")
