@@ -1,21 +1,24 @@
-def runPlot():
 
+def runPlot():
+    # Imports
     import streamlit as st
-    import time as time
-    import datetime
-    import requests 
-    import numpy
+    import requests
     import pandas as pd
-    import plotly.graph_objs as go
     import numpy as np
     from pandas.io.json import json_normalize
-    from bokeh.plotting import figure
-    import altair as alt
     import time as timee
+    import datetime
+    import calendar
+    import snelheidPlot
+    import plotly.express as px
 
+    # Progress bar, status text, checking distance
+    progress = 0
+    progress_bar = st.sidebar.progress(progress)
+    status_text = st.sidebar.empty()
+    checkingDistance = st.sidebar.empty()
 
-
-
+    # Zet skaterlookup url
     SkaterLookupURL = "https://speedskatingresults.com/api/json/skater_lookup.php"
 
     # Functie die skater ophaald voor de dropdown
@@ -42,106 +45,125 @@ def runPlot():
     familyname = st.sidebar.text_input('Achternaam')
 
     #Schaatsers ophalen
-    skatersList = getSkaters(givenname,familyname)
-    skatersFormatted = skatersList['givenname']+ ' ' +  skatersList['familyname'] + ' (' +  skatersList['country'] + ')'
-    skaterListID = skatersList['id']
+    try: 
+        skatersList = getSkaters(givenname,familyname)
+        skatersFormatted = skatersList['givenname']+ ' ' +  skatersList['familyname'] + ' (' +  skatersList['country'] + ')'
+        skaterListID = skatersList['id']
+    except:
+        st.error("---GEEN SCHAATSER MET DEZE NAAM GEVONDEN---")
 
+    
     #Zijmenu: Dropdown met schaatsers
     chosenSkater = st.sidebar.selectbox('Schaatster',skatersFormatted)
 
     #Skater ID ophalen
     SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
 
-    #st.sidebar.header("Filter:") 
-    #distance = st.sidebar.radio("Afstand",(500, 1000, 1500, 3000, 5000, 10000))
 
     # URL
     URL = "https://speedskatingresults.com/api/json/skater_results.php"
+    
+    
+    # list die gevuld gaat worden met distances waarbij geen data is
+    emptydistances = []
 
-    Parameters = {'skater': SkaterID}
-    r = requests.get(url=URL, params=Parameters)
-    data = r.json()
+    # list van alle distances
+    distances = [100,
+        200,
+        300,
+        400,
+        500,
+        700,
+        1000,
+        1500,
+        3000,
+        5000,
+        10000]
 
-    # Json to dataframe
-    df = json_normalize(data)
+    # Info
+    st.header("Info:")
+    st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
+    
+    # For loop zodat elke distance gecheckt wordt
+    for distance in distances:
+        Distance = distance
+             
+        # Set checking distance
+        checkingDistance.text("Checking Afstand: %im " % distance)
 
-    # Json column to new dataframe
-    dfNormalized = pd.io.json.json_normalize(df.results[0])
+        # Api resultaat ophalen
+        Parameters = {'skater': SkaterID, 'distance': Distance}
+        r = requests.get(url=URL, params=Parameters)
+        data = r.json()
 
-    dfLocation = dfNormalized.groupby('location', axis='columns')
+        # Json to dataframe
+        df = json_normalize(data)
 
-    # # Season Bests
-    # Parameters = {'skater':SkaterID} 
+        # Json column to new dataframe
+        dfCompetitions = pd.io.json.json_normalize(df.results[0])
 
-    # r = requests.get(url = PersonalRecordsURL, params = Parameters) 
+        # Check of dataframe is leeg
+        # Else niet plotten
+        if not dfCompetitions.empty and not len(dfCompetitions.index) == 1:
+            dfCompetitions.drop(columns=[['link', 'name']])
 
-    # data = r.json() 
+            for index, row in dfCompetitions.iterrows():
+                if '.' in dfCompetitions['time'].iloc[index]:
+                    x = timee.strptime(
+                        dfCompetitions['time'].iloc[index].split(',')[0], '%M.%S')
 
-    # # Json to dataframe
-    # df = json_normalize(data)
+                    dfCompetitions['time'].iloc[index] = datetime.timedelta(
+                        minutes=x.tm_min, seconds=x.tm_sec).total_seconds()
+                else:
+                    dfCompetitions['time'].iloc[index] = dfCompetitions['time'].iloc[index].replace(
+                        ',', '.')
+            # Convert naar int
+            dfCompetitions['time'] = pd.to_numeric(dfCompetitions['time'])
 
-    # # Json column to new dataframe
-    # dfNormalized = pd.io.json.json_normalize(df.records[0])
+            # Nieuwe empty list om een nieuwe dataframe te maken
+            data = []
+            
+            dfCompetitions['date'] = pd.to_datetime(dfCompetitions['date'])
 
-    #lists
-    st.title("Plots with location")
+            dfCompetitions = dfCompetitions.sort_values(by='date')
 
-    if not dfNormalized.empty:
-        dates = dfNormalized['date'].values.tolist()
+            # Set figure
+            fig = px.line(dfCompetitions, x="date", y="time", color='location')
 
+            # Update figure layout
+            fig.update_layout(
+                title='Plot Afstanden op Locatie ' + str(Distance) + 'm',
+                xaxis_title="Datum",
+                yaxis_title="Tijd",
+                height=400,\
+            )
 
-        for index, row in dfNormalized.iterrows():
-            if '.' in dfNormalized['time'].iloc[index]:
-                x = timee.strptime(
-                    dfNormalized['time'].iloc[index].split(',')[0], '%M.%S')
-
-                dfNormalized['time'].iloc[index] = datetime.timedelta(
-                    minutes=x.tm_min, seconds=x.tm_sec).total_seconds()
-            else:
-                dfNormalized['time'].iloc[index] = dfNormalized['time'].iloc[index].replace(
-                    ',', '.')
-        # Convert naar int
-        dfNormalized['time'] = pd.to_numeric(dfNormalized['time'])
-
-
-        data = []
-
-        # Bereken snelheid en zet in list
-        for index, row in dfNormalized.iterrows():
-            strindex = str(index + 1)
-
-            # Tijd variable uit de kollom halen
-            time = dfNormalized['time'].iloc[index]
-
-            # Data list met gegevens geven
-            data.append([strindex, time])
-
-        # Set list to dataframe
-        cols = ['id', 'time']
-        dfTimes = pd.DataFrame(data, columns=cols)
+            # Plotly chart
+            st.plotly_chart(fig, use_container_width=True)
 
 
-        times = dfNormalized['time'].values.tolist()
-        
-        location = dfNormalized['location'].values.tolist()
-        locations = str(location)[1:-1]
+            # Print lange doorgetrokken lijn om afstanden makkelijker te zien splitsen
+            slashes = '-' * 30
+            st.write(slashes)
 
-        st.header("Info:") 
-        st.write("Naam: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
-        st.dataframe(dfNormalized)
 
-        dfNormalized.set_index('date')
+        else:
+            # Vul emptydistances list met de empty distance
+            emptydistances.append(distance)
 
-        st.header("Chart:") 
+            # Als emptydistances alle distances bevat geef melding
+            if emptydistances == distances:
+                st.error("GEEN DATA     \n Voeg data toe voor " + str(chosenSkater) +
+                        " op speedskatingresults.com om hier een grafiek te plotten")
 
-        chart = dfNormalized.set_index('date')
+        # Set progressbar
+        if progress == 90:
+            progress = 100
+        else:
+            progress += 9
+        progress_bar.progress(progress)
+        status_text.text("%i%% Compleet" % progress)
 
-        chart_data = pd.DataFrame(
-            np.random.randn(15, 7),
-            columns=['Heerenveen (NED)','Kolomna (RUS)','Calgary (CAN)','Berlin (GER)','Inzell (GER)','Hamar (NOR)','Amsterdam-Olympic (NED)'
-        ])
-
-        st.line_chart(chart_data)
-
-    else: 
-            st.header("Geen data") 
+        # Set checking distance
+        if distance == 10000:
+            checkingDistance.empty()
