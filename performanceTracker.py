@@ -60,7 +60,7 @@ def runPlot():
             "   \nSkaterID: " + str(SkaterID))
 
     # SkaterID = 831
-    # Distance = 1500
+    # Distance = 1000
     start = 2007
     end = 2020
     Distance = st.sidebar.selectbox('Afstand', [
@@ -283,23 +283,22 @@ def runPlot():
         # For loop op de API result naar een nieuwe dataframe te krijgen
         for i in range(difference):
             try:
-                seizoen = dfSBT_nor1['start'].iloc[i]
-                geredenSeizoenen.append(str(seizoen))
+                if not dfSBT_nor1['records'].iloc[i] == []:
+                    seizoen = dfSBT_nor1['start'].iloc[i]
+                    geredenSeizoenen.append(str(seizoen))
 
-                temp = pd.json_normalize(dfSBT_nor1.records[i])
-                jaar = dfSBT_nor1['start'].iloc[i]
-                afstand = temp['distance'].iloc[0]
+                    temp = pd.json_normalize(dfSBT_nor1.records[i])
+                    jaar = dfSBT_nor1['start'].iloc[i]
+                    afstand = temp['distance'].iloc[0]
 
-                tijd = temp['time'].iloc[0]
+                    tijd = temp['time'].iloc[0]
 
-                datum = temp['date'].iloc[0]
-                location = temp['location'].iloc[0]
+                    datum = temp['date'].iloc[0]
+                    location = temp['location'].iloc[0]
 
+                    # dataWR.append([datum, WR])
+                    dataSBT.append([jaar, afstand, tijd, datum, location])
                 # WR = dfWorldRecord['Gereden tijd'].iloc[0]
-
-                # dataWR.append([datum, WR])
-
-                dataSBT.append([jaar, afstand, tijd, datum, location])
             except:
                 1+1
 
