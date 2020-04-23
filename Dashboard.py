@@ -4,6 +4,8 @@ import snelheidPlot
 import dataframePlot
 import personal_records
 import plotslocatie
+import performanceTracker
+import plotMetTijden
 from PIL import Image
 
 html = """
@@ -25,6 +27,10 @@ html = """
     color:white;
 }
 
+.stRadio label{
+    color:white;
+}
+
 
 </style>
 """
@@ -35,13 +41,16 @@ image = Image.open('logo.png')
 st.sidebar.image(image, width= 250,)
 
 # Dropdown met de keuze qua plots
-plots = [' ', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Alle Data']
+plots = [' ', 'Performance Tracker', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Plots met tijden', 'Alle Data']
 plotTab = st.sidebar.selectbox('Selecteer een Plot', plots)
 
 # If en elif's die scripts oproepen om de plots te maken
 if plotTab == ' ': #default
     st.title("Dashboard")
     st.header("Team Skating")
+elif plotTab == 'Performance Tracker': #performanceTracker
+    st.title('Performance tracker')
+    performanceTracker.runPlot()
 elif plotTab == 'Gemiddelde snelheid': #snelheidPlot
     st.title("Gemiddelde snelheid van alle seizoenen")
     snelheidPlot.runPlot()
@@ -51,5 +60,7 @@ elif plotTab == 'Locatie plot': #plotslocatie
     plotslocatie.runPlot()
 elif plotTab == 'Alle Data': #dataframePlot
     dataframePlot.runPlot()
+elif plotTab == 'Plots met tijden': #plotMetTijden
+    plotMetTijden.runPlot()
 else: #Foutmelding
     st.error("Geen keuze gemaakt in het menu")

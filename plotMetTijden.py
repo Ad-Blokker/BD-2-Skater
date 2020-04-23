@@ -105,7 +105,7 @@ def runPlot():
         # Check of dataframe is leeg
         # Else niet plotten
         if not dfCompetitions.empty and not len(dfCompetitions.index) == 1:
-            dfCompetitions.drop(columns=['link', 'name'])
+            dfCompetitions.drop(columns=['link'])
 
             for index, row in dfCompetitions.iterrows():
                 if '.' in dfCompetitions['time'].iloc[index]:
@@ -128,13 +128,13 @@ def runPlot():
             dfCompetitions = dfCompetitions.sort_values(by='date')
 
             # Set figure
-            fig = px.line(dfCompetitions, x="date", y="time", color='location')
+            fig = px.line(dfCompetitions, x="date", y="time")
 
             # Update figure layout
             fig.update_layout(
                 title='Plot Afstanden op Locatie ' + str(Distance) + 'm',
                 xaxis_title="Datum",
-                yaxis_title="Tijd",
+                yaxis_title="Tijd (s)",
                 height=400,\
             )
 

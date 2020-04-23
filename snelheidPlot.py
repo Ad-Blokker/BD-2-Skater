@@ -5,12 +5,12 @@ def runPlot():
     import requests
     import pandas as pd
     import numpy as np
-    from bokeh.plotting import figure
     from pandas.io.json import json_normalize
     import time as timee
     import datetime
     import calendar
     import snelheidPlot
+    import plotly.express as px
 
     # Progress bar, status text, checking distance
     progress = 0
@@ -150,31 +150,22 @@ def runPlot():
             avgSpeed = dfSpeed['speed'].mean()
             avgSpeed = "{:.2f}".format(avgSpeed)
 
-            dates = dfSpeed['date'].values.tolist()
-            speed = dfSpeed['speed'].values.tolist()
-
-            TOOLTIPS = [
-                ("Snelheid:", "$y"),
-            ]
-
-            # Configureer figure en plot het
-            fig = figure(
-                plot_height=400,
-                title='Snelheid van ' + str(Distance) + "m",
-                x_axis_label='Datum',
-                y_axis_label='Snelheid in km/h',
-                tools="pan, wheel_zoom, reset, save, hover", 
-                active_drag="pan",
-                tooltips = TOOLTIPS,
-                x_axis_type='datetime',
+            # Set figure
+            fig = px.line(dfSpeed, 
+                x='date', 
+                y='speed', 
+                height=400,
             )
-            
-            # fig.plot_height = 400
-            fig.line(dfSpeed['date'], dfSpeed['speed'],
-                    legend='Snelheid', line_width=2)
 
-            # Set sort chart (bokeh_chart)
-            st.bokeh_chart(fig, use_container_width=True)
+            # Update figure layout
+            fig.update_layout(
+                title='Snelheid van ' + str(Distance) + 'm',
+                xaxis_title="Datum",
+                yaxis_title="Gemiddelde Snelheid",
+            )
+
+            # Plotly chart
+            st.plotly_chart(fig, use_container_width=True)
 
             # Print gemiddelde snelheid
             st.subheader("Gemiddelde snelheid is " + str(avgSpeed) + " km/h")

@@ -7,9 +7,15 @@ def runPlot():
     import pandas as pd
     from pandas.io.json import json_normalize
 
+    # Progress bar, status text, checking distance
+    progress = 0
+    progress_bar = st.sidebar.progress(progress)
+    status_text = st.sidebar.empty()
+    checkingDistance = st.sidebar.empty()
+
 
     SkaterLookupURL = "https://speedskatingresults.com/api/json/skater_lookup.php"
-    PersonalRecordsURL =  "https://speedskatingresults.com/api/json/personal_records.php"
+    URL =  "https://speedskatingresults.com/api/json/skater_results.php"
 
 
     #Ophalen van skaters a.d.h.v. achternaam
@@ -31,6 +37,19 @@ def runPlot():
         return int(skaterID)
 
 
+    # list van alle distances
+    distances = [100,
+        200,
+        300,
+        400,
+        500,
+        700,
+        1000,
+        1500,
+        3000,
+        5000,
+        10000]
+    
     # Zijmenu: Achternaam zoeken
     st.sidebar.header("Zoeken:") 
     givenname = st.sidebar.text_input('Voornaam')
@@ -50,34 +69,51 @@ def runPlot():
     #Skater ID ophalen
     SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
 
-    # Competition list
-    URL =  "https://speedskatingresults.com/api/json/skater_competitions.php"
+    st.subheader('Data')
+    emptydistances = []
 
-    Season = 2012
+    for distance in distances:
+        Distance = distance
+                     
+        # Set checking distance
+        checkingDistance.text("Checking Afstand: %im " % distance)
 
-    Parameters = {'skater':SkaterID, 'season' : Season} 
+        # Api resultaat ophalen
+        Parameters = {'skater': SkaterID, 'distance': Distance}
+        r = requests.get(url=URL, params=Parameters)
+        data = r.json()
 
-    r = requests.get(url = URL, params = Parameters) 
+        # Json to dataframe
+        df = json_normalize(data)
 
-    data = r.json()
+        # Json column to new dataframe
+        dfCompetitions = pd.io.json.json_normalize(df.results[0])
+    
+        if not dfCompetitions.empty:
+            # if st.checkbox('Is een hamer neutraal?'):
+            st.write(str(Distance) +'m:')
 
-    # Json to dataframe
-    from pandas.io.json import json_normalize
-    df = json_normalize(data)
+            # drop link column
+            dfCompetitions = dfCompetitions.drop(columns=['link'])
 
-    # Json column to new dataframe
-    dfCompetitions = pd.io.json.json_normalize(df.competitions[0])
+            dfCompetitions = dfCompetitions.rename(columns={"time": "Gereden tijd", "date": "Datum", "name": "Toernooi","location": "Locatie"})
+            # dfCompetitions = dfCompetitions[["Distance","Record time","Date","Location"]]
 
-    if not dfCompetitions.empty:
-        # if st.checkbox('Is een hamer neutraal?'):
-        st.subheader('Data:')
+            st.write(dfCompetitions)
+        else:
+            emptydistances.append(distance)            
+            # Als emptydistances alle distances bevat geef melding
+            if emptydistances == distances:
+                st.error("GEEN DATA     \n Voeg data toe voor " + str(chosenSkater) +
+                        " op speedskatingresults.com om hier een grafiek te plotten")
+        # Set progressbar
+        if progress == 90:
+            progress = 100
+        else:
+            progress += 9
+        progress_bar.progress(progress)
+        status_text.text("%i%% Compleet" % progress)
 
-        # drop link column
-        dfCompetitions = dfCompetitions.drop(columns=['link', 'id', 'trackid'])
-
-        dfCompetitions = dfCompetitions.rename(columns={"name": "Event", "startdate": "Start Datum", "enddate": "Eind datum","location": "Locatie"})
-        # dfCompetitions = dfCompetitions[["Distance","Record time","Date","Location"]]
-
-        st.write(dfCompetitions)
-    else:
-        st.error('Geen data van deze persoon gevonden')
+        # Set checking distance
+        if distance == 10000:
+            checkingDistance.empty()
