@@ -105,7 +105,7 @@ def runPlot():
         # Check of dataframe is leeg
         # Else niet plotten
         if not dfCompetitions.empty and not len(dfCompetitions.index) == 1:
-            dfCompetitions.drop(columns=[['link', 'name']])
+            dfCompetitions.drop(columns=['link', 'name'])
 
             for index, row in dfCompetitions.iterrows():
                 if '.' in dfCompetitions['time'].iloc[index]:
