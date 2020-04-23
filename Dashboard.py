@@ -26,6 +26,10 @@ html = """
     color:white;
 }
 
+.stRadio label{
+    color:white;
+}
+
 
 </style>
 """
