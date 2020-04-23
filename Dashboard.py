@@ -5,6 +5,7 @@ import dataframePlot
 import personal_records
 import plotslocatie
 import performanceTracker
+import plotMetTijden
 from PIL import Image
 
 html = """
@@ -40,7 +41,7 @@ image = Image.open('logo.png')
 st.sidebar.image(image, width= 250,)
 
 # Dropdown met de keuze qua plots
-plots = [' ', 'Performance Tracker', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Alle Data']
+plots = [' ', 'Performance Tracker', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Plots met tijden', 'Alle Data']
 plotTab = st.sidebar.selectbox('Selecteer een Plot', plots)
 
 # If en elif's die scripts oproepen om de plots te maken
@@ -59,5 +60,7 @@ elif plotTab == 'Locatie plot': #plotslocatie
     plotslocatie.runPlot()
 elif plotTab == 'Alle Data': #dataframePlot
     dataframePlot.runPlot()
+elif plotTab == 'Plots met tijden': #plotMetTijden
+    plotMetTijden.runPlot()
 else: #Foutmelding
     st.error("Geen keuze gemaakt in het menu")
