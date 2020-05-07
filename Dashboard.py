@@ -16,8 +16,13 @@ html = """
   color: white;
 }
 
-.image-container img{
-    margin-top: -35px
+.main img{
+    margin-top: -94px;
+    margin-left: -260px;   
+}
+
+.sidebar img{
+    margin-top: -35px;  
 }
 
 .stTextInput label{
@@ -41,13 +46,15 @@ image = Image.open('logo.png')
 st.sidebar.image(image, width= 250,)
 
 # Dropdown met de keuze qua plots
-plots = [' ', 'Performance Tracker', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Plots met tijden', 'Alle Data']
+plots = ['Home', 'Performance Tracker', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Plots met tijden', 'Alle Data']
 plotTab = st.sidebar.selectbox('Selecteer een Plot', plots)
 
 # If en elif's die scripts oproepen om de plots te maken
-if plotTab == ' ': #default
-    st.title("Dashboard")
-    st.header("Team Skating")
+if plotTab == 'Home': #default
+    imageDashboard = Image.open('Dahsboard_foto.png')
+    st.image(imageDashboard, width=1230,)
+    # st.title("Dashboard")
+    # st.header("Team Skating")
 elif plotTab == 'Performance Tracker': #performanceTracker
     st.title('Performance tracker')
     performanceTracker.runPlot()

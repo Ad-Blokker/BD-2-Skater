@@ -100,19 +100,8 @@ def runPlot():
     # Gender ophalen
     Gender = skatersList['gender'].iloc[0]
 
-    # Gender input
-    # Gender = 'm'
-    # GenderOption = st.sidebar.radio("Geslacht", ('Man', 'Vrouw'))
-    # if GenderOption == 'Man':
-    #     Gender = 'm'
-    # elif GenderOption == 'Vrouw':
-    #     Gender = 'f'
-    # else:
-    #     st.write("Geen optie geselecteerd")
-
     # Leeftijdscategorie ophalen
     catSkater = skatersList['category'].iloc[0]
-    st.write(catSkater)
 
     # Set ageCate naar jr/sr
     ageCate = ''
@@ -121,28 +110,6 @@ def runPlot():
         ageCate = 'jr'
     else:
         ageCate = 'sr'
-    st.write(ageCate)
-
-    # Leeftijdscategorie input
-    # ageCate = 'jr'
-    # ageCat = st.sidebar.radio("Leeftijdscategorie", ('Senior', 'Junior'))
-    # if ageCat == 'Junior':
-    #     ageCate = 'jr'
-    # elif ageCat == 'Senior':
-    #     ageCate = 'sr'
-    # else:
-    #     st.write("Geen optie geselecteerd")
-
-    # dataframe ophalen uit defWorldRecords
-    # dfWorldRecord = getWorldRecord(Gender, ageCate, Distance)
-    # dfWorldRecord['name'] = dfWorldRecord[['skater.givenname',
-    #                                        'skater.familyname']].apply(lambda x: ' '.join(x), axis=1)
-    # dfWorldRecord = dfWorldRecord.rename(columns={
-    #                                      'gender': 'Gender', 'age': 'Leeftijds Categorie', 'distance': 'Afstand', 'time': 'Gereden tijd', 'name': 'Behaald door'})
-
-    # st.subheader('Huidig Wereld Record:')
-    # st.write(dfWorldRecord[['Gender', 'Leeftijds Categorie',
-    #                         'Afstand', 'Gereden tijd', 'Behaald door']])
 
     # dfSBT_nor1 zijn alle results met de jaren los
     dfSBT_nor1 = getSBT(SkaterID, start, end, Distance)
@@ -315,10 +282,6 @@ def runPlot():
 
         # Dataframe combined met WR en SBT
         dfMerged =pd.concat([dfWR, dfSBT['time']], axis=1)
-
-        # Vult de nieuwe WR dataframe met de gegevens die hierboven gekregen zijn
-        # dfWorldRecordDataframe = pd.DataFrame(
-        #     data=dataWR, columns=['date', 'time'])
 
         # Print de dataframe uit
         st.subheader('Season bests van ' + str(chosenSkater) + ':')
