@@ -112,7 +112,6 @@ def runPlot():
 
     # Leeftijdscategorie ophalen
     catSkater = skatersList['category'].iloc[0]
-    st.write(catSkater)
 
     # Set ageCate naar jr/sr
     ageCate = ''
@@ -121,7 +120,10 @@ def runPlot():
         ageCate = 'jr'
     else:
         ageCate = 'sr'
+    st.write(Gender)
     st.write(ageCate)
+    st.write(catSkater)
+
 
     # Leeftijdscategorie input
     # ageCate = 'jr'

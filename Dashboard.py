@@ -16,8 +16,13 @@ html = """
   color: white;
 }
 
+.element-container img{
+    margin-top: -94px;
+    margin-left: -260px;   
+}
+
 .image-container img{
-    margin-top: -35px
+    margin-top: -35px;  
 }
 
 .stTextInput label{
@@ -46,8 +51,10 @@ plotTab = st.sidebar.selectbox('Selecteer een Plot', plots)
 
 # If en elif's die scripts oproepen om de plots te maken
 if plotTab == ' ': #default
-    st.title("Dashboard")
-    st.header("Team Skating")
+    imageDashboard = Image.open('Dahsboard_foto.png')
+    st.image(imageDashboard, width=1230,)
+    # st.title("Dashboard")
+    # st.header("Team Skating")
 elif plotTab == 'Performance Tracker': #performanceTracker
     st.title('Performance tracker')
     performanceTracker.runPlot()
