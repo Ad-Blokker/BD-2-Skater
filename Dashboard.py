@@ -16,12 +16,12 @@ html = """
   color: white;
 }
 
-.element-container img{
+.main img{
     margin-top: -94px;
     margin-left: -260px;   
 }
 
-.image-container img{
+.sidebar img{
     margin-top: -35px;  
 }
 
@@ -46,11 +46,11 @@ image = Image.open('logo.png')
 st.sidebar.image(image, width= 250,)
 
 # Dropdown met de keuze qua plots
-plots = [' ', 'Performance Tracker', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Plots met tijden', 'Alle Data']
+plots = ['Home', 'Performance Tracker', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Plots met tijden', 'Alle Data']
 plotTab = st.sidebar.selectbox('Selecteer een Plot', plots)
 
 # If en elif's die scripts oproepen om de plots te maken
-if plotTab == ' ': #default
+if plotTab == 'Home': #default
     imageDashboard = Image.open('Dahsboard_foto.png')
     st.image(imageDashboard, width=1230,)
     # st.title("Dashboard")
