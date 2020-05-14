@@ -42,11 +42,11 @@ def runPlot():
     # Schaatsers ophalen
     try:
         skatersList = getSkaters(givenname, familyname)
-        skatersFormatted = skatersList['givenname'] + ' ' + \
-            skatersList['familyname'] + ' (' + skatersList['country'] + ')'
+        skatersFormatted = skatersList['givenname'] + ' ' + skatersList['familyname'] + ' (' + skatersList['country'] + ')'
         skaterListID = skatersList['id']
     except:
-        st.error("---GEEN SCHAATSER MET DEZE NAAM GEVONDEN---")
+        st.warning("Geen data gevonden voor deze schaatser")
+
 
     # Zijmenu: Dropdown met schaatsers
     chosenSkater = st.sidebar.selectbox('Schaatster', skatersFormatted)
@@ -392,5 +392,5 @@ def runPlot():
         st.plotly_chart(fig2, use_container_width=True)
 
     else:
-        st.error("GEEN DATA     \n Voeg data toe voor " + str(chosenSkater) +
-                 " op de " + str(Distance) + "m op speedskatingresults.com om hier een grafiek te plotten")
+        st.warning("Geen data: Er is geen data gevonden voor " + str(chosenSkater) +
+                 " op de " + str(Distance) + "m op speedskatingresults.com")

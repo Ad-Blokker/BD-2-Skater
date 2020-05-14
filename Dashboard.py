@@ -6,6 +6,7 @@ import personal_records
 import plotslocatie
 import performanceTracker
 import plotMetTijden
+import home
 from PIL import Image
 
 html = """
@@ -14,11 +15,6 @@ html = """
   background-color: #F39D12;
   background-image: none;
   color: white;
-}
-
-.main img{
-    margin-top: -94px;
-    margin-left: -260px;   
 }
 
 .sidebar img{
@@ -51,8 +47,7 @@ plotTab = st.sidebar.selectbox('Selecteer een Plot', plots)
 
 # If en elif's die scripts oproepen om de plots te maken
 if plotTab == 'Home': #default
-    imageDashboard = Image.open('Dahsboard_foto.png')
-    st.image(imageDashboard, width=1230,)
+    home.runPlot()
     # st.title("Dashboard")
     # st.header("Team Skating")
 elif plotTab == 'Performance Tracker': #performanceTracker
