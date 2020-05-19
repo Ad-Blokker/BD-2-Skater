@@ -90,7 +90,7 @@ def runPlot():
         st.warning('Geen afstanden geselecteerd')
     else:
         selectedDistances = sorted(selectedDistances)
-    
+
     # For loop zodat elke distance gecheckt wordt
     for distance in selectedDistances:
         Distance = distance
@@ -133,6 +133,10 @@ def runPlot():
             for index, row in dfCompetitions.iterrows():
                 strindex = str(index + 1)
 
+                location = dfCompetitions['location'].iloc[index]
+
+                event = dfCompetitions['name'].iloc[index]
+
                 date = dfCompetitions['date'].iloc[index]
 
                 # Tijd variable uit de kollom halen
@@ -142,10 +146,10 @@ def runPlot():
                 speedEach = (Distance / time) * 3.6
 
                 # Data list met gegevens geven
-                data.append([strindex, date, speedEach])
+                data.append([strindex, date, speedEach, location, event])
 
             # Set list to dataframe
-            cols = ['id', 'date', 'speed']
+            cols = ['id', 'date', 'speed', 'location', 'event']
             dfSpeed = pd.DataFrame(data, columns=cols)
             dfSpeed = dfSpeed.sort_values(by='date')
 
@@ -153,17 +157,11 @@ def runPlot():
             avgSpeed = dfSpeed['speed'].mean()
             avgSpeed = "{:.2f}".format(avgSpeed)
 
-            # Set figure
-            # fig = px.line(dfSpeed, 
-            #     x='date', 
-            #     y='speed', 
-            #     height=400,
-            # )
-
-            listDate = dfSpeed['date'].to_list()
-
-
-            fig = px.line(dfSpeed, x='date', y='speed')
+            fig = px.line(dfSpeed, x='date', y='speed',
+                hover_data={'speed':':.2f',
+                'event':True},
+                hover_name='location'
+            )
 
             import plotly.graph_objects as go
 
