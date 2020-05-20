@@ -12,12 +12,6 @@ def runPlot():
     import snelheidPlot
     import plotly.express as px
 
-    # Progress bar, status text, checking distance
-    progress = 0
-    progress_bar = st.sidebar.progress(progress)
-    status_text = st.sidebar.empty()
-    checkingDistance = st.sidebar.empty()
-
     # Zet skaterlookup url
     SkaterLookupURL = "https://speedskatingresults.com/api/json/skater_lookup.php"
 
@@ -78,19 +72,28 @@ def runPlot():
         3000,
         5000,
         10000]
-    
-   
 
     # Info
     st.header("Info:")
     st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
-    
+
+    selectedDistances = []
+
+    selectedDistances = st.sidebar.multiselect('afstanden', distances)
+
+    checkAllDistance = st.sidebar.checkbox('Alle afstanden')
+
+    if checkAllDistance:
+        selectedDistances = distances
+
+    if not selectedDistances:
+        st.warning('Geen afstanden geselecteerd')
+    else:
+        selectedDistances = sorted(selectedDistances)
+
     # For loop zodat elke distance gecheckt wordt
-    for distance in distances:
+    for distance in selectedDistances:
         Distance = distance
-             
-        # Set checking distance
-        checkingDistance.text("Checking Afstand: %im " % distance)
 
         # Api resultaat ophalen
         Parameters = {'skater': SkaterID, 'distance': Distance}
@@ -130,6 +133,10 @@ def runPlot():
             for index, row in dfCompetitions.iterrows():
                 strindex = str(index + 1)
 
+                location = dfCompetitions['location'].iloc[index]
+
+                event = dfCompetitions['name'].iloc[index]
+
                 date = dfCompetitions['date'].iloc[index]
 
                 # Tijd variable uit de kollom halen
@@ -139,10 +146,10 @@ def runPlot():
                 speedEach = (Distance / time) * 3.6
 
                 # Data list met gegevens geven
-                data.append([strindex, date, speedEach])
+                data.append([strindex, date, speedEach, location, event])
 
             # Set list to dataframe
-            cols = ['id', 'date', 'speed']
+            cols = ['id', 'date', 'speed', 'location', 'event']
             dfSpeed = pd.DataFrame(data, columns=cols)
             dfSpeed = dfSpeed.sort_values(by='date')
 
@@ -150,22 +157,43 @@ def runPlot():
             avgSpeed = dfSpeed['speed'].mean()
             avgSpeed = "{:.2f}".format(avgSpeed)
 
-            # Set figure
-            fig = px.line(dfSpeed, 
-                x='date', 
-                y='speed', 
-                height=400,
+            fig = px.line(dfSpeed, x='date', y='speed',
+                hover_data={'speed':':.2f',
+                'event':True},
+                hover_name='location'
             )
+
+            import plotly.graph_objects as go
+
+            dfSpeed['avg'] = avgSpeed
+
+            fig.add_trace(go.Scatter(x=dfSpeed['date'], y=dfSpeed['avg'],
+                    mode='lines',
+                    line=dict(color="red"),
+                    name='Gemiddelde: ' + str(avgSpeed)))
+            
+            dfTrend = dfSpeed['speed'].copy()
+            dfTrend = dfTrend.reset_index(drop=True)
+
+            fig2 = px.scatter(dfTrend, x=dfTrend.index, y=dfSpeed['speed'], trendline='ols', trendline_color_override='red', marginal_y="violin")
+
+            fig2.update_layout(
+                title='Trend van ' + str(Distance) + 'm',
+                xaxis_title="Keren gereden",
+                yaxis_title="Gemiddelde Snelheid (km/h)",
+            )
+
 
             # Update figure layout
             fig.update_layout(
                 title='Snelheid van ' + str(Distance) + 'm',
                 xaxis_title="Datum",
-                yaxis_title="Gemiddelde Snelheid",
+                yaxis_title="Gemiddelde Snelheid (km/h)",
             )
 
             # Plotly chart
             st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig2,use_container_width=True)
 
             # Print gemiddelde snelheid
             st.subheader("Gemiddelde snelheid is " + str(avgSpeed) + " km/h")
@@ -178,20 +206,11 @@ def runPlot():
         else:
             # Vul emptydistances list met de empty distance
             emptydistances.append(distance)
+            if not distances == selectedDistances: 
+                st.warning('Er is geen data gevonden voor ' + str(chosenSkater) + ' op de ' + str(Distance) + 'm.')
+
 
             # Als emptydistances alle distances bevat geef melding
             if emptydistances == distances:
                 st.error("GEEN DATA     \n Voeg data toe voor " + str(chosenSkater) +
                         " op speedskatingresults.com om hier een grafiek te plotten")
-
-        # Set progressbar
-        if progress == 90:
-            progress = 100
-        else:
-            progress += 9
-        progress_bar.progress(progress)
-        status_text.text("%i%% Compleet" % progress)
-
-        # Set checking distance
-        if distance == 10000:
-            checkingDistance.empty()

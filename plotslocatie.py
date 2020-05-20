@@ -12,12 +12,6 @@ def runPlot():
     import snelheidPlot
     import plotly.express as px
 
-    # Progress bar, status text, checking distance
-    progress = 0
-    progress_bar = st.sidebar.progress(progress)
-    status_text = st.sidebar.empty()
-    checkingDistance = st.sidebar.empty()
-
     # Zet skaterlookup url
     SkaterLookupURL = "https://speedskatingresults.com/api/json/skater_lookup.php"
 
@@ -80,17 +74,28 @@ def runPlot():
         5000,
         10000]
 
+    selectedDistances = []
+
+    selectedDistances = st.sidebar.multiselect('afstanden', distances)
+
+    checkAllDistance = st.sidebar.checkbox('Alle afstanden')
+
+    if checkAllDistance:
+        selectedDistances = distances
+
     # Info
     st.header("Info:")
     st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
+
+    if not selectedDistances:
+        st.warning('Geen afstanden geselecteerd')
+    else:
+        selectedDistances = sorted(selectedDistances)
     
     # For loop zodat elke distance gecheckt wordt
-    for distance in distances:
+    for distance in selectedDistances:
         Distance = distance
              
-        # Set checking distance
-        checkingDistance.text("Checking Afstand: %im " % distance)
-
         # Api resultaat ophalen
         Parameters = {'skater': SkaterID, 'distance': Distance}
         r = requests.get(url=URL, params=Parameters)
@@ -125,21 +130,35 @@ def runPlot():
             
             dfCompetitions['date'] = pd.to_datetime(dfCompetitions['date'])
 
-            dfCompetitions = dfCompetitions.sort_values(by='date')
+            dfCompetitions = dfCompetitions.sort_values(by='location')
+            dfCompetitions = dfCompetitions.rename({"location": "Locatie"}, axis="columns")
 
             # Set figure
-            fig = px.line(dfCompetitions, x="date", y="time", color='location')
+            fig = px.scatter(dfCompetitions, x="date", y="time", color='Locatie')
 
             # Update figure layout
             fig.update_layout(
-                title='Plot Afstanden op Locatie ' + str(Distance) + 'm',
+                title='Tijden op de  ' + str(Distance) + 'm',
                 xaxis_title="Datum",
                 yaxis_title="Tijd",
                 height=400,\
             )
 
+            dfCompetitions = dfCompetitions.sort_values(by='date')
+            dfTrend = dfCompetitions['time'].copy()
+            dfTrend = dfTrend.reset_index(drop=True)
+
+            fig2 = px.scatter(dfTrend, x=dfTrend.index, y=dfCompetitions['time'], trendline='ols', trendline_color_override='red', marginal_y="violin")
+
+            fig2.update_layout(
+                title='Trend van ' + str(Distance) + 'm',
+                xaxis_title="Keren gereden",
+                yaxis_title="tijd (s)",
+            )
+
             # Plotly chart
             st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig2, use_container_width=True)
 
 
             # Print lange doorgetrokken lijn om afstanden makkelijker te zien splitsen
@@ -150,20 +169,10 @@ def runPlot():
         else:
             # Vul emptydistances list met de empty distance
             emptydistances.append(distance)
+            if not distances == selectedDistances: 
+                st.warning('Er is geen data gevonden voor ' + str(chosenSkater) + ' op de ' + str(Distance) + 'm.')
 
             # Als emptydistances alle distances bevat geef melding
             if emptydistances == distances:
                 st.error("GEEN DATA     \n Voeg data toe voor " + str(chosenSkater) +
                         " op speedskatingresults.com om hier een grafiek te plotten")
-
-        # Set progressbar
-        if progress == 90:
-            progress = 100
-        else:
-            progress += 9
-        progress_bar.progress(progress)
-        status_text.text("%i%% Compleet" % progress)
-
-        # Set checking distance
-        if distance == 10000:
-            checkingDistance.empty()

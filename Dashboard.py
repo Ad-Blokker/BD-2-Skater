@@ -31,6 +31,9 @@ html = """
 .stRadio label{
     color:white;
 }
+.stMultiSelect label{
+    color:white;
+}
 
 
 </style>
