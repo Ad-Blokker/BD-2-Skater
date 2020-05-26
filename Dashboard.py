@@ -34,19 +34,56 @@ html = """
 .stMultiSelect label{
     color:white;
 }
-
+.logo{
+    width:250px;
+}
+.knsb{
+    width:100px;
+    position:fixed;
+    bottom:3px;
+    padding-bottom:10px;
+    right:20px;
+    z-index:5;
+}
+.hva{
+    width:135px;
+    position:fixed;
+    bottom:-17px;
+    right:130px;
+    z-index:5;
+}
+.datavalley{
+    width:100px;
+    position:fixed;
+    bottom:10px;
+    right:280px;
+    z-index:5;
+}
+.sidebar{
+    z-index:10;
+}
 
 </style>
 """
+speedskatinglogo = "<img class=\"logo\" src=\"https://i.imgur.com/aF1Lgnx.png\" />"
+logos = """
+
+<img class="knsb" src=\"https://i.imgur.com/VSveX8J.png\" /> 
+<img class="hva" src=\"https://i.imgur.com/JMyruEu.png\" /> 
+<img class="datavalley" src=\"https://i.imgur.com/gysnqiq.png\" /> 
+
+"""
+
 
 st.markdown(html, unsafe_allow_html=True)
-
-image = Image.open('logo.png')
-st.sidebar.image(image, width= 250,)
+st.sidebar.markdown(speedskatinglogo, unsafe_allow_html=True)
 
 # Dropdown met de keuze qua plots
 plots = ['Home', 'Performance Tracker', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Plots met tijden', 'Alle Data']
 plotTab = st.sidebar.selectbox('Selecteer een Plot', plots)
+
+st.markdown(logos, unsafe_allow_html=True)
+
 
 # If en elif's die scripts oproepen om de plots te maken
 if plotTab == 'Home': #default
