@@ -75,7 +75,6 @@ def runPlot():
         10000]
 
     # Info
-    st.header("Info:")
     st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
 
     selectedDistances = []
@@ -113,8 +112,6 @@ def runPlot():
             dfCompetitions.drop(columns=['link'])
             dfCompetitions = dfCompetitions.rename({"name": "Event"}, axis="columns")
 
-            st.success('Afstand: ' + str(Distance) + 'm')
-
             for index, row in dfCompetitions.iterrows():
                 if '.' in dfCompetitions['time'].iloc[index]:
                     x = timee.strptime(
@@ -141,7 +138,7 @@ def runPlot():
 
             # Update figure layout
             fig.update_layout(
-                title='Plot Afstanden op Locatie ' + str(Distance) + 'm',
+                #title='Plot Afstanden op Locatie ' + str(Distance) + 'm',
                 xaxis_title="Datum",
                 yaxis_title="Tijd (s)",
                 height=400,\
@@ -153,18 +150,15 @@ def runPlot():
             fig2 = px.scatter(dfTrend, x=dfTrend.index, y=dfCompetitions['time'], trendline='ols', trendline_color_override='red', marginal_y="violin")
 
             fig2.update_layout(
-                title='Trend van ' + str(Distance) + 'm',
+                #title='Trend van ' + str(Distance) + 'm',
                 xaxis_title="Keren gereden",
                 yaxis_title="tijd (s)",
             )
 
             # Plotly chart
+            st.subheader('Plot afstanden op locatie ' + str(Distance) + 'm')
             st.plotly_chart(fig, use_container_width=True)
             st.plotly_chart(fig2, use_container_width=True)
-
-            # Print lange doorgetrokken lijn om afstanden makkelijker te zien splitsen
-            slashes = '-' * 30
-            st.write(slashes)
 
 
         else:

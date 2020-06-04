@@ -84,7 +84,6 @@ def runPlot():
         selectedDistances = distances
 
     # Info
-    st.header("Info:")
     st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
 
     if not selectedDistances:

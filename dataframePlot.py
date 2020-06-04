@@ -69,7 +69,6 @@ def runPlot():
     #Skater ID ophalen
     SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
 
-    st.subheader('Data')
     emptydistances = []
 
     for distance in distances:

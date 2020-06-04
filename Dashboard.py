@@ -39,28 +39,35 @@ html = """
 }
 .knsb{
     width:100px;
-    position:fixed;
-    bottom:3px;
-    padding-bottom:10px;
-    right:20px;
+    display: inline-block;
+    padding:10px;
+  opacity: 0.5;
+
+
     z-index:5;
 }
 .hva{
     width:135px;
-    position:fixed;
-    bottom:-17px;
-    right:130px;
+    display: inline-block;
+    padding:10px;
+  opacity: 0.5;
+
+
     z-index:5;
 }
 .datavalley{
     width:100px;
-    position:fixed;
-    bottom:10px;
-    right:280px;
+    display: inline-block;
+    padding:10px;
+  opacity: 0.5;
+
     z-index:5;
 }
 .sidebar{
     z-index:10;
+}
+footer{
+    text-align:center;
 }
 
 </style>
@@ -68,9 +75,9 @@ html = """
 speedskatinglogo = "<img class=\"logo\" src=\"https://i.imgur.com/aF1Lgnx.png\" />"
 logos = """
 
-<img class="knsb" src=\"https://i.imgur.com/VSveX8J.png\" /> 
+<footer><img class="knsb" src=\"https://i.imgur.com/VSveX8J.png\" /> 
 <img class="hva" src=\"https://i.imgur.com/JMyruEu.png\" /> 
-<img class="datavalley" src=\"https://i.imgur.com/gysnqiq.png\" /> 
+<img class="datavalley" src=\"https://i.imgur.com/gysnqiq.png\" /> </footer>
 
 """
 
@@ -79,10 +86,9 @@ st.markdown(html, unsafe_allow_html=True)
 st.sidebar.markdown(speedskatinglogo, unsafe_allow_html=True)
 
 # Dropdown met de keuze qua plots
-plots = ['Home', 'Performance Tracker', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Plots met tijden', 'Alle Data']
+plots = ['Home', 'Performance Tracker', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Plot met tijden', 'Alle Data']
 plotTab = st.sidebar.selectbox('Selecteer een Plot', plots)
 
-st.markdown(logos, unsafe_allow_html=True)
 
 
 # If en elif's die scripts oproepen om de plots te maken
@@ -93,16 +99,31 @@ if plotTab == 'Home': #default
 elif plotTab == 'Performance Tracker': #performanceTracker
     st.title('Performance tracker')
     performanceTracker.runPlot()
+    st.markdown(logos, unsafe_allow_html=True)
+
 elif plotTab == 'Gemiddelde snelheid': #snelheidPlot
     st.title("Gemiddelde snelheid van alle seizoenen")
     snelheidPlot.runPlot()
+    st.markdown(logos, unsafe_allow_html=True)
+
 elif plotTab == 'Persoonlijke Records': #personal_records
     personal_records.runPlot()
+    st.markdown(logos, unsafe_allow_html=True)
+
 elif plotTab == 'Locatie plot': #plotslocatie
+    st.title('Locatie plot')
     plotslocatie.runPlot()
+    st.markdown(logos, unsafe_allow_html=True)
+
 elif plotTab == 'Alle Data': #dataframePlot
+    st.title('Alle data')
     dataframePlot.runPlot()
-elif plotTab == 'Plots met tijden': #plotMetTijden
+    st.markdown(logos, unsafe_allow_html=True)
+
+elif plotTab == 'Plot met tijden': #plotMetTijden
+    st.title('Plot met tijden')
     plotMetTijden.runPlot()
+    st.markdown(logos, unsafe_allow_html=True)
+
 else: #Foutmelding
     st.error("Geen keuze gemaakt in het menu")

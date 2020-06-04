@@ -55,7 +55,6 @@ def runPlot():
     SkaterID = findSkaterID(chosenSkater, skatersFormatted, skaterListID)
 
     # Info
-    st.header("Info:")
     st.info("Schaatser: " + str(chosenSkater) +
             "   \nSkaterID: " + str(SkaterID))
 
@@ -308,7 +307,8 @@ def runPlot():
         )
 
         # Plotly chart
-        st.plotly_chart(fig, use_container_width=True)
+        #st.subheader('Tijd van '+ str(Distance)+'m')
+        st.plotly_chart(fig )
 
         # Maak een temp dataframe aan om rSBT uit te rekenen
         dfTemp = dfMerged.copy()

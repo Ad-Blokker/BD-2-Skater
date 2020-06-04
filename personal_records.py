@@ -72,8 +72,8 @@ def runPlot():
 
         times = dfNormalized['time'].values.tolist()
 
-
-        st.write("Naam: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
+        # Info
+        st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
         dfNormalized = dfNormalized.rename(columns={"date": "Datum", "distance": "Distance", "location": "Locatie","time": "Record tijd"})
         dfNormalized = dfNormalized[["Distance","Record tijd","Datum","Locatie"]]
         dfNormalized['Distance'] =  dfNormalized['Distance'].astype(str)+ "m"

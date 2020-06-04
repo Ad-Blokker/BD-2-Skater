@@ -74,7 +74,6 @@ def runPlot():
         10000]
 
     # Info
-    st.header("Info:")
     st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
 
     selectedDistances = []
@@ -178,7 +177,7 @@ def runPlot():
             fig2 = px.scatter(dfTrend, x=dfTrend.index, y=dfSpeed['speed'], trendline='ols', trendline_color_override='red', marginal_y="violin")
 
             fig2.update_layout(
-                title='Trend van ' + str(Distance) + 'm',
+                #title='Trend van ' + str(Distance) + 'm',
                 xaxis_title="Keren gereden",
                 yaxis_title="Gemiddelde Snelheid (km/h)",
             )
@@ -186,21 +185,21 @@ def runPlot():
 
             # Update figure layout
             fig.update_layout(
-                title='Snelheid van ' + str(Distance) + 'm',
+                #title='Snelheid van ' + str(Distance) + 'm',
                 xaxis_title="Datum",
                 yaxis_title="Gemiddelde Snelheid (km/h)",
             )
 
             # Plotly chart
+            st.subheader('Snelheid van ' + str(Distance) + 'm')
             st.plotly_chart(fig, use_container_width=True)
             st.plotly_chart(fig2,use_container_width=True)
 
-            # Print gemiddelde snelheid
-            st.subheader("Gemiddelde snelheid is " + str(avgSpeed) + " km/h")
+
 
             # Print lange doorgetrokken lijn om afstanden makkelijker te zien splitsen
-            slashes = '-' * 30
-            st.write(slashes)
+            #slashes = '-' * 30
+            #st.write(slashes)
 
 
         else:
