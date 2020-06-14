@@ -16,7 +16,7 @@ The project can be deployed inside a docker container by following these steps:
 
 3. Start the container using the following command:
 
-> docker run -p 80:8501 st:app
+> docker run -p 80:8501 speedskating:app
 
 Note: In this case port 80 is exposed by default (http). This can be changed to 443 (ssl) or any other port if necessary. Port 8501 is used internally for Streamlit
 
