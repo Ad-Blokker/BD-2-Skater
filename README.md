@@ -32,7 +32,7 @@ Team Skating
 **Mark Blokker**  
 [mark.blokker@hva.nl](mailto:mark.blokker@hva.nl)  
 
-**Talha Uçar**
+**Talha Uçar** 
 [talha.ucar@hva.nl](mailto:talha.ucar@hva.nl)
 
 **Mellum Su**   
@@ -44,6 +44,6 @@ Team Skating
 **Dax ten Voorde** 
 [dax.ten.voorde@hva.nl](mailto:dax.ten.voorde@hva.nl)
 
-Amsterdam University of Applied Sciences
+**Amsterdam University of Applied Sciences** 
 https://www.amsterdamuas.com/ (EN)
 https://www.hva.nl/ (NL)
