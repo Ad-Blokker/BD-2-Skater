@@ -30,21 +30,20 @@ The dashboard is made using the [Streamlit](https://www.streamlit.io/) library. 
 Team Skating
 
 **Mark Blokker**  
-500777384  
 [mark.blokker@hva.nl](mailto:mark.blokker@hva.nl)  
 
 **Talha Uçar**
-500778614  
 [talha.ucar@hva.nl](mailto:talha.ucar@hva.nl)
 
-**Mellum Su**  
-500776404  
+**Mellum Su**   
 [mellum.su@hva.nl](mailto:mellum.su@hva.nl)
 
-**Sehit Karadağ**
-500752424  
+**Sehit Karadağ** 
 [sehit.karadag@hva.nl](mailto:sehit.karadag@hva.nl)
 
-**Dax ten Voorde**
-500804209  
+**Dax ten Voorde** 
 [dax.ten.voorde@hva.nl](mailto:dax.ten.voorde@hva.nl)
+
+Amsterdam University of Applied Sciences
+https://www.amsterdamuas.com/ (EN)
+https://www.hva.nl/ (NL)
