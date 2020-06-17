@@ -64,7 +64,7 @@ html = """
     z-index:5;
 }
 .sidebar{
-    z-index:10;
+
 }
 footer{
     text-align:center;
