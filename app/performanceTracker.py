@@ -282,6 +282,9 @@ def runPlot():
         # Dataframe combined met WR en SBT
         dfMerged =pd.concat([dfWR, dfSBT['time']], axis=1)
 
+        st.write("Leefdtijdscategorie: " + str(ageCate) +
+            "    \nGeslacht: " + str(Gender))
+
         # Print de dataframe uit
         st.subheader('Season bests van ' + str(chosenSkater) + ':')
         st.write(dfSBT)
