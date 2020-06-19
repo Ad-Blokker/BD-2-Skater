@@ -13,10 +13,10 @@ def runPlot():
     import plotly.graph_objects as go
     from datetime import datetime as dt
 
-    # Zet skaterlookup url
+    #API source
     SkaterLookupURL = "https://speedskatingresults.com/api/json/skater_lookup.php"
 
-    # Functie die skater ophaald voor de dropdown
+    #Retrieving skaters by firstname and lastname
     def getSkaters(givenname, familyname):
         parameters = {'givenname': givenname, 'familyname': familyname}
         r = requests.get(url=SkaterLookupURL, params=parameters)
@@ -26,7 +26,7 @@ def runPlot():
 
         return resultsNormalized
 
-    # Functie die skaterID vindt
+    #Retrieving Skater ID of the chosen skater (in the side menu)
     def findSkaterID(chosenSkater, skatersFormatted, skaterListID):
         search = skatersFormatted.str.find(chosenSkater)
         listIndex = np.where(search == 0)
@@ -34,12 +34,12 @@ def runPlot():
 
         return int(skaterID)
 
-    # Zijmenu: Achternaam zoeken
+    #Sidebar inputs for skaters
     st.sidebar.header("Zoeken:")
     givenname = st.sidebar.text_input('Voornaam')
     familyname = st.sidebar.text_input('Achternaam')
 
-    # Schaatsers ophalen
+    #Retrieving skaters with user input
     try:
         skatersList = getSkaters(givenname, familyname)
         skatersFormatted = skatersList['givenname'] + ' ' + skatersList['familyname'] + ' (' + skatersList['country'] + ')'
@@ -48,18 +48,16 @@ def runPlot():
         st.warning("Geen data gevonden voor deze schaatser")
 
 
-    # Zijmenu: Dropdown met schaatsers
+    #Sidebar dropdown menu with a list of skaters (results of search query)
     chosenSkater = st.sidebar.selectbox('Schaatster', skatersFormatted)
 
-    # Skater ID ophalen
+    #Getting Skater ID of chosen 
     SkaterID = findSkaterID(chosenSkater, skatersFormatted, skaterListID)
 
     # Info
     st.info("Schaatser: " + str(chosenSkater) +
             "   \nSkaterID: " + str(SkaterID))
-
-    # SkaterID = 831
-    # Distance = 1000
+    
     start = 2007
     end = 2020
     Distance = st.sidebar.selectbox('Afstand', [
@@ -71,7 +69,7 @@ def runPlot():
     ])
     Distance = int(Distance)
 
-    # SBT resultaat ophalen
+    # Retrieving Season bests results using API
     def getSBT(SkaterID, start, end, Distance):
         Parameters = {'skater': SkaterID, 'start': start,
                       'end': end, 'distance': Distance}
@@ -84,7 +82,7 @@ def runPlot():
 
         return resultsNormalized
 
-    # SBT resultaat ophalen
+    # Retrieving World records using API
     def getWorldRecord(Gender, Age, Distance):
         Parameters = {'gender': Gender, 'age': Age, 'distance': Distance}
         # URL
@@ -96,13 +94,13 @@ def runPlot():
 
         return resultsNormalized
 
-    # Gender ophalen
+    # Retrieving gender
     Gender = skatersList['gender'].iloc[0]
 
-    # Leeftijdscategorie ophalen
+    # Retrieving age category
     catSkater = skatersList['category'].iloc[0]
 
-    # Set ageCate naar jr/sr
+    # Set ageCate to jr/sr
     ageCate = ''
 
     if catSkater == 'YF' or catSkater == 'YE' or catSkater == 'YD' or catSkater == 'YC' or catSkater == 'YB' or catSkater == 'YA' or catSkater == 'C1' or catSkater == 'C2' or catSkater == 'B1' or catSkater == 'B2' or catSkater == 'A1' or catSkater == 'A2':
@@ -113,12 +111,15 @@ def runPlot():
     # dfSBT_nor1 zijn alle results met de jaren los
     dfSBT_nor1 = getSBT(SkaterID, start, end, Distance)
 
-    # checkt of er genoeg data is
+    # Check if there is enough data
     if not dfSBT_nor1.empty and not len(dfSBT_nor1.index) <= 2:
 
-        # Wereld Records in een dataframe
+        # All world record years
         seizoenWR = ['2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020']
 
+        # World record information
+        # Currently hardcoded, would be nice to implement an API connection in the future.
+        
         # 1000m
         wrRecords1000ManSR = ['1.07,03', '1.07,00', '1.07,00', '1.06,42', '1.06,42', '1.06,42', '1.06,42', '1.06,42', '1.06,42', '1.06,42', '1.06,42', '1.06,42', '1.06,42', '1.06,18']
         wrRecords1000FemaleSR = ['1.13,11', '1.13,11', '1.13,11', '1.13,11', '1.13,11', '1.13,11', '1.12,68', '1.12,58', '1.12,58', '1.12,18', '1.12,18', '1.12,09', '1.12,09', '1.11,61']
@@ -170,7 +171,7 @@ def runPlot():
         dfWR10000FemaleSR = pd.DataFrame(np.column_stack([seizoenWR, wrRecords10000FemaleSR]),  columns=['season', 'record'])
         dfWR10000FemaleJR = pd.DataFrame(np.column_stack([seizoenWR, wrRecords10000FemaleJR]),  columns=['season', 'record'])
 
-        # Set dfWR naar de dataframe die hoort bij de Distance
+        # Set dfWR to the Dataframe that belongs to Distance
         if Distance == 1000:
             if Gender == 'm':
                 if ageCate =='sr':
@@ -229,24 +230,20 @@ def runPlot():
         else:
             dfWR = dfWR10000FemaleJR
 
-
-        # Nieuwe lijst zodat er een dataframe gevuld kan worden
+        # New list used to fill a dataframe
         dataSBT = []
         dataWR = []
 
-        # Tijdelijke dataframe die gebruikt wordt om later een dataframe te maken
+        # Temporary dataframe that is used later on in order to create a dataframe
         temp = pd.DataFrame(columns=['distance', 'time', 'date', 'location'])
 
-        # Record met alle info
+        # Record with all info
         difference = 12
-
-        # World record uit API
-        # WR = dfWorldRecord['Gereden tijd'].iloc[0]
-
-        # gereden seizoenen
+        
+        # Skated seasons
         geredenSeizoenen = []
 
-        # For loop op de API result naar een nieuwe dataframe te krijgen
+        # A for loop to import API results into a new dataframe
         for i in range(difference):
             try:
                 if not dfSBT_nor1['records'].iloc[i] == []:
@@ -268,24 +265,24 @@ def runPlot():
             except:
                 1+1
 
-        # Vult de nieuwe SBT dataframe met de gegevens die hierboven gekregen zijn
+        # Fill the new Season bests (SBT) dataframe with data that has been retrieved until now (above)
         dfSBT = pd.DataFrame(data=dataSBT, columns=[
                              'season_year', 'distance', 'time', 'date', 'location'])
 
-        # Dataframe beperken tot de gereden seizoenen
+        # Limit Dataframe to seasons that were actually skated
         dfWR = dfWR[dfWR['season'].isin(geredenSeizoenen)]
         dfWR = dfWR.reset_index(drop=True)
 
-        # dfSBT reverse zodat dfSBT en dfWR op dezelfde jaren zitten
+        # Reversing dfSBT so dfSBT and dfWR are on the same years
         dfSBT = dfSBT.iloc[::-1].reset_index(drop=True)
 
-        # Dataframe combined met WR en SBT
+        # Dataframe combined with WR en SBT
         dfMerged =pd.concat([dfWR, dfSBT['time']], axis=1)
 
         st.write("Leefdtijdscategorie: " + str(ageCate) +
             "    \nGeslacht: " + str(Gender))
 
-        # Print de dataframe uit
+        # Print dataframe
         st.subheader('Season bests van ' + str(chosenSkater) + ':')
         st.write(dfSBT)
 
@@ -313,10 +310,10 @@ def runPlot():
         #st.subheader('Tijd van '+ str(Distance)+'m')
         st.plotly_chart(fig )
 
-        # Maak een temp dataframe aan om rSBT uit te rekenen
+        # A dataframe to calculate rSBT
         dfTemp = dfMerged.copy()
 
-        # SBT naar int zetten
+        # Convert SBT to int
         for index, row in dfTemp.iterrows():
             try:
                 if '.' in dfTemp['time'].iloc[index]:
@@ -330,10 +327,10 @@ def runPlot():
                         ',', '.')
             except:
                 1+0
-        # Convert naar int
+        # Convert to int
         dfTemp['time'] = pd.to_numeric(dfTemp['time'])
 
-        # WR naar int zetten  
+        # Convert WR to int
         for index, row in dfTemp.iterrows():
             if '.' in dfTemp['record'].iloc[index]:
                 x = time.strptime(
@@ -344,13 +341,13 @@ def runPlot():
             else:
                 dfTemp['record'].iloc[index] = dfTemp['record'].iloc[index].replace(
                     ',', '.')
-        # Convert naar int
+        # Convert to int
         dfTemp['record'] = pd.to_numeric(dfTemp['record'])
         
-        # Lege list om later als nieuwe kollom te dienen
+        # Empty list which is used later for columns
         rSBTs = []
 
-        # rSBT berekenen en toevoegen aan lijst
+        # Calculating rSBT and adding it to the list
         for index, row in dfTemp.iterrows():
             rSBT = round((dfTemp['time'].iloc[index] / dfTemp['record'].iloc[index]) * 100, 2)
             
@@ -360,13 +357,13 @@ def runPlot():
 
             rSBTs.append(rSBT)
         
-        # rSBTs lijst aan dataframe toevoegen
+        # Putting rSBTs list into a new dataframe
         dfMerged['percent'] = rSBTs
         
         # Rename columns
         dfMerged = dfMerged.rename(columns={'season': 'Seizoen', 'record': 'Wereld Record*', 'time': str(chosenSkater), 'percent': 'rSBT'})
 
-        # Rows met nan worden verwijderd
+        # Rows with nan verwijderd
         dfMerged.dropna(subset = ["rSBT"], inplace=True)
         
         # Streamlit print table
