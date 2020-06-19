@@ -1,6 +1,5 @@
 
 def runPlot():
-
     import streamlit as st
     import numpy as np
     import requests 
@@ -18,7 +17,7 @@ def runPlot():
     URL =  "https://speedskatingresults.com/api/json/skater_results.php"
 
 
-    #Ophalen van skaters a.d.h.v. achternaam
+    #Retrieving skaters by firstname and lastname
     def getSkaters(givenname,familyname):
         parameters = {'givenname':givenname,'familyname':familyname} 
         r = requests.get(url = SkaterLookupURL, params = parameters) 
@@ -28,7 +27,7 @@ def runPlot():
 
         return resultsNormalized
 
-    #Vinden van skater ID a.d.h.v. selectie in zijmenu
+    #Retrieving Skater ID of the chosen skater (in the side menu)
     def findSkaterID(chosenSkater, skatersFormatted,skaterListID):
         search = skatersFormatted.str.find(chosenSkater)
         listIndex = np.where(search == 0)
@@ -37,7 +36,7 @@ def runPlot():
         return int(skaterID)
 
 
-    # list van alle distances
+    #List of distances
     distances = [100,
         200,
         300,
@@ -50,23 +49,23 @@ def runPlot():
         5000,
         10000]
     
-    # Zijmenu: Achternaam zoeken
+    # Sidebar inputs for skaters
     st.sidebar.header("Zoeken:") 
     givenname = st.sidebar.text_input('Voornaam')
     familyname = st.sidebar.text_input('Achternaam')
     
-    #Schaatsers ophalen
+    #Retrieving skaters with user input
     try: 
         skatersList = getSkaters(givenname,familyname)
         skatersFormatted = skatersList['givenname']+ ' ' +  skatersList['familyname'] + ' (' +  skatersList['country'] + ')'
         skaterListID = skatersList['id']
     except:
-        st.error("---GEEN SCHAATSER MET DEZE NAAM GEVONDEN---")
+        st.error("Geen schaatser met deze naam gevonden")
 
-    #Zijmenu: Dropdown met schaatsers
+    #Sidebar dropdown menu with a list of skaters (results of search query)
     chosenSkater = st.sidebar.selectbox('Schaatster',skatersFormatted)
 
-    #Skater ID ophalen
+    #Getting Skater ID of chosen skater
     SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
 
     emptydistances = []
@@ -77,7 +76,7 @@ def runPlot():
         # Set checking distance
         checkingDistance.text("Checking Afstand: %im " % distance)
 
-        # Api resultaat ophalen
+        # Retrieving data using API
         Parameters = {'skater': SkaterID, 'distance': Distance}
         r = requests.get(url=URL, params=Parameters)
         data = r.json()
@@ -101,9 +100,9 @@ def runPlot():
             st.write(dfCompetitions)
         else:
             emptydistances.append(distance)            
-            # Als emptydistances alle distances bevat geef melding
+            # If empty distances contain all distances
             if emptydistances == distances:
-                st.error("GEEN DATA     \n Voeg data toe voor " + str(chosenSkater) +
+                st.error("Geen data     \n Voeg data toe voor " + str(chosenSkater) +
                         " op speedskatingresults.com om hier een grafiek te plotten")
         # Set progressbar
         if progress == 90:
