@@ -9,6 +9,7 @@ import plotMetTijden
 import home
 from PIL import Image
 
+#Main CSS markup on top of Streamlit for the KNSB theme
 html = """
 <style>
 .sidebar .sidebar-content {
@@ -85,17 +86,15 @@ logos = """
 st.markdown(html, unsafe_allow_html=True)
 st.sidebar.markdown(speedskatinglogo, unsafe_allow_html=True)
 
-# Dropdown met de keuze qua plots
+# Dropdown with choices to select a plot
 plots = ['Home', 'Performance Tracker', 'Gemiddelde snelheid', 'Persoonlijke Records','Locatie plot', 'Plot met tijden', 'Alle Data']
 plotTab = st.sidebar.selectbox('Selecteer een Plot', plots)
 
 
 
-# If en elif's die scripts oproepen om de plots te maken
+# Calling plots chosen by user input
 if plotTab == 'Home': #default
     home.runPlot()
-    # st.title("Dashboard")
-    # st.header("Team Skating")
 elif plotTab == 'Performance Tracker': #performanceTracker
     st.title('Performance tracker')
     performanceTracker.runPlot()
@@ -125,5 +124,5 @@ elif plotTab == 'Plot met tijden': #plotMetTijden
     plotMetTijden.runPlot()
     st.markdown(logos, unsafe_allow_html=True)
 
-else: #Foutmelding
+else: #Error
     st.error("Geen keuze gemaakt in het menu")
