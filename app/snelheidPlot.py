@@ -12,10 +12,10 @@ def runPlot():
     import snelheidPlot
     import plotly.express as px
 
-    # Zet skaterlookup url
+    # API source
     SkaterLookupURL = "https://speedskatingresults.com/api/json/skater_lookup.php"
 
-    # Functie die skater ophaald voor de dropdown
+    # Retrieving skaters by firstname and lastname
     def getSkaters(givenname,familyname):
         parameters = {'givenname':givenname,'familyname':familyname} 
         r = requests.get(url = SkaterLookupURL, params = parameters) 
@@ -25,7 +25,7 @@ def runPlot():
 
         return resultsNormalized
 
-    # Functie die skaterID vindt
+    # Retrieving Skater ID of the chosen skater (in the side menu)
     def findSkaterID(chosenSkater, skatersFormatted,skaterListID):
         search = skatersFormatted.str.find(chosenSkater)
         listIndex = np.where(search == 0)
@@ -33,12 +33,12 @@ def runPlot():
 
         return int(skaterID)
 
-    # Zijmenu: Achternaam zoeken
+    # Sidebar inputs for skaters
     st.sidebar.header("Zoeken:") 
     givenname = st.sidebar.text_input('Voornaam')
     familyname = st.sidebar.text_input('Achternaam')
 
-    #Schaatsers ophalen
+    # Retrieving skaters with user input
     try: 
         skatersList = getSkaters(givenname,familyname)
         skatersFormatted = skatersList['givenname']+ ' ' +  skatersList['familyname'] + ' (' +  skatersList['country'] + ')'
@@ -47,20 +47,20 @@ def runPlot():
         st.error("---GEEN SCHAATSER MET DEZE NAAM GEVONDEN---")
 
     
-    #Zijmenu: Dropdown met schaatsers
+    # Sidebar dropdown menu with a list of skaters (results of search query)
     chosenSkater = st.sidebar.selectbox('Schaatster',skatersFormatted)
 
-    #Skater ID ophalen
+    # Getting Skater ID of chosen 
     SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
 
     # URL
     URL = "https://speedskatingresults.com/api/json/skater_results.php"
     
     
-    # list die gevuld gaat worden met distances waarbij geen data is
+    # List that will be filled with distances where there are no data
     emptydistances = []
 
-    # list van alle distances
+    # List with all the distances
     distances = [100,
         200,
         300,
@@ -90,11 +90,11 @@ def runPlot():
     else:
         selectedDistances = sorted(selectedDistances)
 
-    # For loop zodat elke distance gecheckt wordt
+    # For loop to check all the distances
     for distance in selectedDistances:
         Distance = distance
 
-        # Api resultaat ophalen
+        # Get API results
         Parameters = {'skater': SkaterID, 'distance': Distance}
         r = requests.get(url=URL, params=Parameters)
         data = r.json()
@@ -105,8 +105,8 @@ def runPlot():
         # Json column to new dataframe
         dfCompetitions = pd.io.json.json_normalize(df.results[0])
 
-        # Check of dataframe is leeg
-        # Else niet plotten
+        # Check if the dataframe is empty
+        # Else Do not plot
         if not dfCompetitions.empty and not len(dfCompetitions.index) == 1:
             dfCompetitions.drop(columns=['link'])
 
@@ -120,15 +120,15 @@ def runPlot():
                 else:
                     dfCompetitions['time'].iloc[index] = dfCompetitions['time'].iloc[index].replace(
                         ',', '.')
-            # Convert naar int
+            # Convert to int
             dfCompetitions['time'] = pd.to_numeric(dfCompetitions['time'])
 
-            # Nieuwe empty list om een nieuwe dataframe te maken
+            # New empty list to create a new dataframe
             data = []
             
             dfCompetitions['date'] = pd.to_datetime(dfCompetitions['date'])
 
-            # Bereken snelheid en zet in list
+            # Calculate speed and put into a list
             for index, row in dfCompetitions.iterrows():
                 strindex = str(index + 1)
 
@@ -138,13 +138,13 @@ def runPlot():
 
                 date = dfCompetitions['date'].iloc[index]
 
-                # Tijd variable uit de kollom halen
+                # Extract time variable from the column
                 time = dfCompetitions['time'].iloc[index]
 
-                # Snelheid variable berekenen naar km/h
+                # Calculate speed variable to km / h
                 speedEach = (Distance / time) * 3.6
 
-                # Data list met gegevens geven
+                # Provide data list with data
                 data.append([strindex, date, speedEach, location, event])
 
             # Set list to dataframe
@@ -152,7 +152,7 @@ def runPlot():
             dfSpeed = pd.DataFrame(data, columns=cols)
             dfSpeed = dfSpeed.sort_values(by='date')
 
-            # Bereken gemiddelde snelheid van een afstand
+            # Calculate average speed from a distance
             avgSpeed = dfSpeed['speed'].mean()
             avgSpeed = "{:.2f}".format(avgSpeed)
 
@@ -177,7 +177,6 @@ def runPlot():
             fig2 = px.scatter(dfTrend, x=dfTrend.index, y=dfSpeed['speed'], trendline='ols', trendline_color_override='red', marginal_y="violin")
 
             fig2.update_layout(
-                #title='Trend van ' + str(Distance) + 'm',
                 xaxis_title="Keren gereden",
                 yaxis_title="Gemiddelde Snelheid (km/h)",
             )
@@ -195,21 +194,14 @@ def runPlot():
             st.plotly_chart(fig, use_container_width=True)
             st.plotly_chart(fig2,use_container_width=True)
 
-
-
-            # Print lange doorgetrokken lijn om afstanden makkelijker te zien splitsen
-            #slashes = '-' * 30
-            #st.write(slashes)
-
-
         else:
-            # Vul emptydistances list met de empty distance
+            # Fill emptydistances list with the empty distance
             emptydistances.append(distance)
             if not distances == selectedDistances: 
                 st.warning('Er is geen data gevonden voor ' + str(chosenSkater) + ' op de ' + str(Distance) + 'm.')
 
 
-            # Als emptydistances alle distances bevat geef melding
+            # If empty distances all distances contains no notification
             if emptydistances == distances:
                 st.error("GEEN DATA     \n Voeg data toe voor " + str(chosenSkater) +
                         " op speedskatingresults.com om hier een grafiek te plotten")
