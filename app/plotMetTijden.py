@@ -125,7 +125,7 @@ def runPlot():
             # Convert to int
             dfCompetitions['time'] = pd.to_numeric(dfCompetitions['time'])
 
-            # New empty list to create a new data frame
+            # New empty list to create a new dataframe
             data = []
             
             dfCompetitions['date'] = pd.to_datetime(dfCompetitions['date'])
