@@ -55,63 +55,69 @@ def runPlot():
     familyname = st.sidebar.text_input('Achternaam')
     
     #Retrieving skaters with user input
+    skaterDoesntExist = False
     try: 
         skatersList = getSkaters(givenname,familyname)
         skatersFormatted = skatersList['givenname']+ ' ' +  skatersList['familyname'] + ' (' +  skatersList['country'] + ')'
         skaterListID = skatersList['id']
     except:
-        st.error("Geen schaatser met deze naam gevonden")
+        skaterDoesntExist = True
 
-    #Sidebar dropdown menu with a list of skaters (results of search query)
-    chosenSkater = st.sidebar.selectbox('Schaatster',skatersFormatted)
+    #Error if skater the user searched for does not exist
+    if skaterDoesntExist == True:
+        st.warning("Fout: Deze schaatscher is niet gevonden op speedskatingresults.com")
+    else:
 
-    #Getting Skater ID of chosen skater
-    SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
+        #Sidebar dropdown menu with a list of skaters (results of search query)
+        chosenSkater = st.sidebar.selectbox('Schaatster',skatersFormatted)
 
-    emptydistances = []
+        #Getting Skater ID of chosen skater
+        SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
 
-    for distance in distances:
-        Distance = distance
-                     
-        # Set checking distance
-        checkingDistance.text("Checking Afstand: %im " % distance)
+        emptydistances = []
 
-        # Retrieving data using API
-        Parameters = {'skater': SkaterID, 'distance': Distance}
-        r = requests.get(url=URL, params=Parameters)
-        data = r.json()
+        for distance in distances:
+            Distance = distance
+                        
+            # Set checking distance
+            checkingDistance.text("Checking Afstand: %im " % distance)
 
-        # Json to dataframe
-        df = json_normalize(data)
+            # Retrieving data using API
+            Parameters = {'skater': SkaterID, 'distance': Distance}
+            r = requests.get(url=URL, params=Parameters)
+            data = r.json()
 
-        # Json column to new dataframe
-        dfCompetitions = pd.io.json.json_normalize(df.results[0])
-    
-        if not dfCompetitions.empty:
-            # if st.checkbox('Is een hamer neutraal?'):
-            st.write(str(Distance) +'m:')
+            # Json to dataframe
+            df = json_normalize(data)
 
-            # drop link column
-            dfCompetitions = dfCompetitions.drop(columns=['link'])
+            # Json column to new dataframe
+            dfCompetitions = pd.io.json.json_normalize(df.results[0])
+        
+            if not dfCompetitions.empty:
+                # if st.checkbox('Is een hamer neutraal?'):
+                st.write(str(Distance) +'m:')
 
-            dfCompetitions = dfCompetitions.rename(columns={"time": "Gereden tijd", "date": "Datum", "name": "Toernooi","location": "Locatie"})
-            # dfCompetitions = dfCompetitions[["Distance","Record time","Date","Location"]]
+                # drop link column
+                dfCompetitions = dfCompetitions.drop(columns=['link'])
 
-            st.write(dfCompetitions)
-        else:
-            emptydistances.append(distance)            
-            # If empty distances contain all distances
-            if emptydistances == distances:
-                st.error("Geen data     \n Voeg data toe voor " + str(chosenSkater) +
-                        " op speedskatingresults.com om hier een grafiek te plotten")
-        # Set progressbar
-        if progress == 90:
-            progress = 100
-        else:
-            progress += 9
-        progress_bar.progress(progress)
-        status_text.text("%i%% Compleet" % progress)
+                dfCompetitions = dfCompetitions.rename(columns={"time": "Gereden tijd", "date": "Datum", "name": "Toernooi","location": "Locatie"})
+                # dfCompetitions = dfCompetitions[["Distance","Record time","Date","Location"]]
 
-        # Set checking distance
-        if distance == 10000:
-            checkingDistance.empty()
+                st.write(dfCompetitions)
+            else:
+                emptydistances.append(distance)            
+                # If empty distances contain all distances
+                if emptydistances == distances:
+                    st.error("Geen data     \n Voeg data toe voor " + str(chosenSkater) +
+                            " op speedskatingresults.com om hier een grafiek te plotten")
+            # Set progressbar
+            if progress == 90:
+                progress = 100
+            else:
+                progress += 9
+            progress_bar.progress(progress)
+            status_text.text("%i%% Compleet" % progress)
+
+            # Set checking distance
+            if distance == 10000:
+                checkingDistance.empty()

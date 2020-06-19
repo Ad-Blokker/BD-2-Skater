@@ -38,44 +38,52 @@ def runPlot():
     familyname = st.sidebar.text_input('Achternaam')
 
     #Retrieving skaters with user input
-    skatersList = getSkaters(givenname,familyname)
-    skatersFormatted = skatersList['givenname']+ ' ' +  skatersList['familyname'] + ' (' +  skatersList['country'] + ')'
-    skaterListID = skatersList['id']
-
-    #Sidebar dropdown menu with a list of skaters (results of search query)
-    chosenSkater = st.sidebar.selectbox('Schaatster',skatersFormatted)
-
-    #Getting Skater ID of chosen 
-    SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
-
-    # Retrieving records using API
-    Parameters = {'skater':SkaterID} 
-    r = requests.get(url = PersonalRecordsURL, params = Parameters) 
-    data = r.json() 
-
-    # Json to dataframe
-    df = json_normalize(data)
-
-    # Json column to new dataframe
-    dfNormalized = pd.io.json.json_normalize(df.records[0])
-
-    #Results
+    skaterDoesntExist = False
+    try: 
+        skatersList = getSkaters(givenname,familyname)
+        skatersFormatted = skatersList['givenname']+ ' ' +  skatersList['familyname'] + ' (' +  skatersList['country'] + ')'
+        skaterListID = skatersList['id']
+    except:
+        skaterDoesntExist = True
+    
     st.title("Persoonlijke Records")
+    #Error if skater the user searched for does not exist
+    if skaterDoesntExist == True:
+        st.warning("Fout: Deze schaatscher is niet gevonden op speedskatingresults.com")
+    else:
+            
+        #Sidebar dropdown menu with a list of skaters (results of search query)
+        chosenSkater = st.sidebar.selectbox('Schaatster',skatersFormatted)
 
-    if not dfNormalized.empty:
-        distances = dfNormalized['distance'].values.tolist()
+        #Getting Skater ID of chosen 
+        SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
 
-        times = dfNormalized['time'].values.tolist()
+        # Retrieving records using API
+        Parameters = {'skater':SkaterID} 
+        r = requests.get(url = PersonalRecordsURL, params = Parameters) 
+        data = r.json() 
 
-        # Info
-        st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
-        dfNormalized = dfNormalized.rename(columns={"date": "Datum", "distance": "Distance", "location": "Locatie","time": "Record tijd"})
-        dfNormalized = dfNormalized[["Distance","Record tijd","Datum","Locatie"]]
-        dfNormalized['Distance'] =  dfNormalized['Distance'].astype(str)+ "m"
-        st.table(dfNormalized.set_index("Distance"))
-        
-    else: 
-            st.header("Geen data") 
+        # Json to dataframe
+        df = json_normalize(data)
+
+        # Json column to new dataframe
+        dfNormalized = pd.io.json.json_normalize(df.records[0])
+
+        #Results
+        if not dfNormalized.empty:
+            distances = dfNormalized['distance'].values.tolist()
+
+            times = dfNormalized['time'].values.tolist()
+
+            # Info
+            st.info("Schaatser: " + str(chosenSkater) + "   \nSkaterID: " + str(SkaterID))
+            dfNormalized = dfNormalized.rename(columns={"date": "Datum", "distance": "Distance", "location": "Locatie","time": "Record tijd"})
+            dfNormalized = dfNormalized[["Distance","Record tijd","Datum","Locatie"]]
+            dfNormalized['Distance'] =  dfNormalized['Distance'].astype(str)+ "m"
+            st.table(dfNormalized.set_index("Distance"))
+            
+        else: 
+                st.header("Geen data") 
 
 
 
