@@ -1,6 +1,6 @@
 FROM python:3
 
-# streamlit-specific commands
+# Streamlit-specific commands
 RUN mkdir -p /root/.streamlit
 RUN bash -c 'echo -e "\
 [general]\n\
@@ -11,17 +11,17 @@ RUN bash -c 'echo -e "\
 enableCORS = false\n\
 " > /root/.streamlit/config.toml'
 
-#Openen van port 8501
+#Opening port 8501 (used by Streamlit)
 EXPOSE 8501
 
-#Lijst van requirements naar container kopieren en installeren
+#Copying list of requirements and installing them using pip
 ADD ./app/requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 
-#De hele app naar de container kopieren
+#Copying contents of /app (the dashboard) into the docker container
 ADD ./app /opt/webapp/
 
 WORKDIR /opt/webapp
 
-#Streamlit starten
+#Starting streamlit
 CMD streamlit run Dashboard.py
