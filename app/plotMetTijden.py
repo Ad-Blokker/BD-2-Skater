@@ -12,10 +12,10 @@ def runPlot():
     import snelheidPlot
     import plotly.express as px
 
-    #API source
+    # API source
     SkaterLookupURL = "https://speedskatingresults.com/api/json/skater_lookup.php"
 
-    #Retrieving skaters by firstname and lastname
+    # Retrieving skaters by firstname and lastname
     def getSkaters(givenname,familyname):
         parameters = {'givenname':givenname,'familyname':familyname} 
         r = requests.get(url = SkaterLookupURL, params = parameters) 
@@ -25,7 +25,7 @@ def runPlot():
 
         return resultsNormalized
 
-    #Retrieving Skater ID of the chosen skater (in the side menu)
+    # Retrieving Skater ID of the chosen skater (in the side menu)
     def findSkaterID(chosenSkater, skatersFormatted,skaterListID):
         search = skatersFormatted.str.find(chosenSkater)
         listIndex = np.where(search == 0)
@@ -33,12 +33,12 @@ def runPlot():
 
         return int(skaterID)
 
-    #Sidebar inputs for skaters
+    # Sidebar inputs for skaters
     st.sidebar.header("Zoeken:") 
     givenname = st.sidebar.text_input('Voornaam')
     familyname = st.sidebar.text_input('Achternaam')
 
-    #Retrieving skaters with user input
+    # Retrieving skaters with user input
     try: 
         skatersList = getSkaters(givenname,familyname)
         skatersFormatted = skatersList['givenname']+ ' ' +  skatersList['familyname'] + ' (' +  skatersList['country'] + ')'
@@ -47,10 +47,10 @@ def runPlot():
         st.error("---GEEN SCHAATSER MET DEZE NAAM GEVONDEN---")
 
     
-    #Sidebar dropdown menu with a list of skaters (results of search query)
+    # Sidebar dropdown menu with a list of skaters (results of search query)
     chosenSkater = st.sidebar.selectbox('Schaatster',skatersFormatted)
 
-    #Getting Skater ID of chosen 
+    # Getting Skater ID of chosen 
     SkaterID = findSkaterID(chosenSkater,skatersFormatted,skaterListID)
 
 
